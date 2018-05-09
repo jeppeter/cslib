@@ -4,6 +4,7 @@ namespace FactorySpace
 {
 	abstract class FactoryBase
 	{
+		protected FactoryBase() {}			
 	}
 
 	class FactoryA : FactoryBase
@@ -49,10 +50,11 @@ namespace FactorySpace
 	{
 		static void Main(string[] args)
 		{
-			FactoryBase base= new FactoryBase[2];
+			FactoryBase[] base;
 			CreateB baseb = new CreateB();
 			CreateA basea = new CreateA();
 
+			base = new FactoryBase[2];
 			base[0] = basea.CreateFactory();
 			base[1] = baseb.CreateFactory();
 			return;
