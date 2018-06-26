@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace tstcase
 {
-    class BaseCall
+    public class BaseCall
     {
         public BaseCall()
         {
