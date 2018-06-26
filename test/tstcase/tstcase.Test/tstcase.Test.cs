@@ -19,5 +19,13 @@ namespace tstcase_Test
             var result = _mcall.BaseCall_add(1, 2);
             Assert.IsTrue(result == 3, "should 3");
         }
+
+        [Test]
+        public void tstcase_Test_false_add()
+        {
+            var result = _mcall.BaseCall_add(1, 2);
+            Assert.IsTrue(result == 2, "should 3");
+
+        }
     }
 }
