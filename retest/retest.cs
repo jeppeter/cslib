@@ -17,14 +17,16 @@ namespace retest
 		private string m_cmd;
 		private string[] m_args;
 
-		private void Usage(int ec, string fmtstr)
+		private void Usage(int ec, string fmtstr, params object[] fmtobj)
 		{
 			TextWriter writer = Console.Error;
+			string outstr;
 			if (ec == 0) {
 				writer = Console.Out;
 			}
 			if (fmtstr.Length > 0) {
-				writer.WriteLine("{0}", fmtstr);
+				outstr = String.Format(fmtstr,fmtobj);
+				writer.WriteLine("{0}", outstr);
 			}
 
 			writer.WriteLine("retest [cmd]...");
