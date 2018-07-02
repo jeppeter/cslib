@@ -31,7 +31,7 @@ public class retest
 
         writer.WriteLine("retest [cmd]...");
         writer.WriteLine("\tmatch restr instr...");
-		writer.WriteLine("\tfind restr instr...");
+        writer.WriteLine("\tfind restr instr...");
         Environment.Exit(ec);
     }
 
@@ -82,15 +82,25 @@ public class retest
         Regex regex = new Regex(this.m_args[1]);
         MatchCollection ms;
         Match m;
-        int j;
+        int j, k;
+        string outstr;
         for (i = 2; i < this.m_args.Length; i++) {
             ms = regex.Matches(this.m_args[i]);
             if (ms.Count > 0) {
-            	Console.Out.WriteLine("{0} find {1} [{2}] count",this.m_args[i],this.m_args[1], ms.Count);
-            	for (j=0;j<ms.Count;j++){
-            		m = ms[j];
-            		Console.Out.WriteLine("\t[{0}]={1}", j,m.ToString());
-            	}            	
+                Console.Out.WriteLine("{0} find {1} [{2}] count", this.m_args[i], this.m_args[1], ms.Count);
+                for (j = 0; j < ms.Count; j++) {
+                    m = ms[j];
+                    outstr = "\t";
+                    outstr += String.Format("[{0}]=[{1}];", j, m.Value);
+                    for (k = 0; k < m.Groups.Count; k++) {
+                        if (k > 0) {
+                            outstr += String.Format(",k[{0}]=[{1}]", k, m.Groups[k].Value);
+                        } else {
+                            outstr += String.Format(" k[{0}]=[{1}]", k, m.Groups[k].Value);
+                        }
+                    }
+                    Console.Out.WriteLine("{0}",outstr);
+                }
             } else {
                 Console.Out.WriteLine("{0} not found {1}", this.m_args[i], this.m_args[1]);
             }
