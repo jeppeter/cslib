@@ -24,6 +24,35 @@ class JsonUtil
         }
     }
 
+    private string format_jarray_string(int tab, string name, JArray arr)
+    {
+    	string rets;
+    	int i;
+    	Object obj;
+    	rets = "";
+    	for (i=0;i<tab;i++) {
+    		rets += "    ";
+    	}
+    	rets += String.Format("\"%s\" : ", name);
+    	for (i=0;i< arr.Count;i++) {
+    		obj = arr[i];
+    		Console.Out.WriteLine("[{0}] = [{1}]", i, obj.GetType().FullName);
+    	}
+    	rets += "\n";
+    	return ret;
+
+    }
+
+    private string format_jobject_string(int tab,string name,JObject obj)
+    {
+    	string rets;
+    	int i;
+    	rets = "";
+    	for (i=0;i<tab;i++) {
+    		rets += "    ";
+    	}
+    }
+
 
     public override string ToString()
     {
