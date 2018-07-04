@@ -25,6 +25,18 @@ class JsonUtil
         }
     }
 
+    private string format_line_tab(int tab,string fmtstr,params object args[])
+    {
+        string rets ;
+        int i;
+        for (i=0;i<tab;i++) {
+            rets += "    ";
+        }
+        rets += String.Format(fmtstr,args);
+        rets += "\n";
+        return rets;
+    }
+
     private string format_jarray_string(int tab, string name, JArray arr)
     {
     	string rets;
@@ -49,6 +61,10 @@ class JsonUtil
     	string rets;
     	int i;
     	rets = "";
+        if (name.Length > 0) {
+            rets += this.format_line_tab(tab,);    
+        }
+        
     	for (i=0;i<tab;i++) {
     		rets += "    ";
     	}
@@ -58,6 +74,7 @@ class JsonUtil
     	}
 
     	rets += "{\n";
+        rets += "}\n";
     	return rets;
     }
 
