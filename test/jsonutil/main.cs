@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 
 
+/*****************************************
+* to build just call 
+* dotnet build -c Release -r win7-x64 
+   it will give you the win7
+*****************************************/
+
 namespace jsonutil
 {
 class JsonUtil
