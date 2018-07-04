@@ -2,7 +2,7 @@
 	"new" : "hello",
 	"count" : 3,
 	"float" : 4.3,
-	"array" : [4,33,22],
+	"array" : [4,33.55,"hello",{"good": "cc"},[22,"ww"]],
 	"dict" : {
 		"hello" : "good",
 		"float" : 353.3

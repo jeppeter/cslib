@@ -35,15 +35,20 @@ class JsonUtil
         return rets;
     }
 
-    private string format_tab_noline(int tab, string fmtstr, params object[]args)
+    private string format_tab_noline(int tab, string fmtstr, params object[] args)
     {
         var rets = "";
         rets += format_tab(tab);
-        rets += String.Format(fmtstr, args);
+        if (args.Length > 0) {
+            rets += String.Format(fmtstr, args);
+        } else {
+            rets += String.Format("{0}", fmtstr);
+        }
+
         return rets;
     }
 
-    private string format_tab_line(int tab, string fmtstr, params object[]args)
+    private string format_tab_line(int tab, string fmtstr, params object[] args)
     {
         var rets = this.format_tab_noline(tab, fmtstr, args);
         rets += "\n";
@@ -55,19 +60,42 @@ class JsonUtil
         var rets = "";
         int i = 0;
         JToken tok;
+        JValue val;
+        string valtype;
 
-        rets += format_tab_noline(tab , """{0}"" : [", key);
-        for (i=0;i<arr.Count;i++) {
-            tok = arr[i];
-            Console.Err.WriteLine("[{0}]=[{1}]", i, tok.GetType().FullName);
+        if (key.Length > 0) {
+            rets += format_tab_noline(tab , "\"{0}\" :", key);
         }
-        foreach( var item in arr.Children()) {
+
+        rets += "[";
+        for (i = 0; i < arr.Count; i++) {
             if (i > 0) {
                 rets += ",";
             }
-            switch()
-
-            i ++;
+            tok = arr[i];
+            valtype = tok.GetType().FullName;
+            if (valtype == "Newtonsoft.Json.Linq.JValue") {
+                val = (JValue) tok;
+                switch (val.Type) {
+                case JTokenType.Integer:
+                    rets += String.Format("{0}", (System.Int64) val.Value);
+                    break;
+                case JTokenType.Float:
+                    rets += String.Format("{0}", (System.Double) val.Value);
+                    break;
+                case JTokenType.String:
+                    rets += String.Format("\"{0}\"", (System.String) val.Value);
+                    break;
+                default:
+                    throw new Exception(String.Format("can not find type {0}", val.Type));
+                }
+            } else if (valtype == "Newtonsoft.Json.Linq.JArray") {
+                rets += this.format_array(tab + 1 , "", tok.Value<JArray>());
+            } else if (valtype == "Newtonsoft.Json.Linq.JObject") {
+                rets += this.format_object(tab + 1 , "", tok.Value<JObject>());
+            } else {
+                throw new Exception(String.Format("unknown type [{0}]", valtype));
+            }
         }
         rets += "]";
         return rets;
@@ -82,7 +110,7 @@ class JsonUtil
         int i;
         if (key.Length > 0) {
             rets += format_tab(tab);
-            rets += String.Format("""%s"" : ", key);
+            rets += String.Format("\"{0}\" : ", key);
         }
         nobj = obj.ToObject<Dictionary<string, object>>();
         keys = new List<String>(nobj.Keys);
@@ -94,13 +122,13 @@ class JsonUtil
             }
             switch (nobj[keys[i]].GetType().FullName) {
             case "System.String":
-                rets += format_tab_noline(tab + 1, """{0}"": {1}" , keys[i], (System.String) nobj[keys[i]]);
+                rets += format_tab_noline(tab + 1, "\"{0}\": \"{1}\"" , keys[i], (System.String) nobj[keys[i]]);
                 break;
             case "System.Int64":
-                rets += format_tab_noline(tab + 1 , """{0}"" : {1}", keys[i], (System.Int64) nobj[keys[i]]);
+                rets += format_tab_noline(tab + 1 , "\"{0}\" : {1}", keys[i], (System.Int64) nobj[keys[i]]);
                 break;
             case "System.Double":
-                rets += format_tab_noline(tab + 1 , """{0}"" : {1}", keys[i], (System.Int64) nobj[keys[i]]);
+                rets += format_tab_noline(tab + 1 , "\"{0}\" : {1}", keys[i], (System.Double) nobj[keys[i]]);
                 break;
             case "Newtonsoft.Json.Linq.JArray":
                 rets += this.format_array(tab + 1 , keys[i], (Newtonsoft.Json.Linq.JArray) nobj[keys[i]]);
@@ -121,7 +149,7 @@ class JsonUtil
 
     public override string ToString()
     {
-        var rets = this.format_object(0,"",this.m_obj);
+        var rets = this.format_object(0, "", this.m_obj);
         return rets;
     }
 

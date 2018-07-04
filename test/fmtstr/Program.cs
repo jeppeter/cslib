@@ -4,7 +4,7 @@ namespace fmtstr
 {
     class Program
     {
-    	private static string format_string(string fmtstr, params string[] args)
+    	private static string format_string(string fmtstr, params object[] args)
     	{
     		return String.Format(fmtstr,args);
     	}
@@ -12,6 +12,9 @@ namespace fmtstr
         {
             string rets;
             string[] slicearr = {};
+
+            rets = format_string("hello {0}", "world");
+            Console.Out.WriteLine(rets);
             if (args.Length > 1) {
             	slicearr = new string[(args.Length-1)];
             }
