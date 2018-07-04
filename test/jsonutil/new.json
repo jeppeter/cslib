@@ -1,0 +1,10 @@
+{
+	"new" : "hello",
+	"count" : 3,
+	"float" : 4.3,
+	"array" : [4,33,22],
+	"dict" : {
+		"hello" : "good",
+		"float" : 353.3
+	}
+}

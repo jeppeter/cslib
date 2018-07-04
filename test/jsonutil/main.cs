@@ -21,25 +21,26 @@ class JsonUtil
 
     public override string ToString()
     {
-        Dictionary<string,Object>.KeyCollection keys;
+        List<String> keys;
         string k;
         int i;
         string rets = "";
-        keys = this.m_obj.Keys;
+        keys = new List<String>(this.m_obj.Keys);
         rets += "{\n";
-        for (i=0;i<keys.Length;i++) {
-        	k = keys[i].Key;
-            rets += String.Format("\"{0}\" : {1}\n", k, this.m_obj[k]);
+        for (i=0;i<keys.Count;i++) {
+        	k = keys[i];
+            rets += String.Format("\t\"{0}\" = type [{1}]\n", k, this.m_obj[k].GetType().FullName);
         }
         rets += "}\n";
         return rets;
     }
 
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         JsonUtil util ;
         int i;
         if (args.Length > 0) {
+        	i = 0;
             if (args[i] == "parse") {
                 for (i = 1; i < args.Length; i++) {
                     util = new JsonUtil(args[i], true);
