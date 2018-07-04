@@ -14,7 +14,7 @@ namespace jsonutil
 {
 class JsonUtil
 {
-    private Dictionary<string, Object> m_obj;
+    private JObject m_obj;
     public JsonUtil(string instr, bool filed = false)
     {
         if (filed) {
@@ -51,6 +51,13 @@ class JsonUtil
     	for (i=0;i<tab;i++) {
     		rets += "    ";
     	}
+
+    	if (name.Length > 0) {
+    		rets += String.Format("\"%s\" : ", name);
+    	}
+
+    	rets += "{\n";
+
     }
 
 
