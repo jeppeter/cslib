@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 
 /*****************************************
@@ -18,9 +19,9 @@ class JsonUtil
     public JsonUtil(string instr, bool filed = false)
     {
         if (filed) {
-            this.m_obj = JsonConvert.DeserializeObject<Dictionary<string, Object>>(File.ReadAllText(instr));
+            this.m_obj = JObject.Parse(File.ReadAllText(instr));
         } else {
-            this.m_obj = JsonConvert.DeserializeObject<Dictionary<string, Object>>(instr);
+            this.m_obj = JObject.Parse(instr);
         }
     }
 
@@ -39,7 +40,7 @@ class JsonUtil
     		Console.Out.WriteLine("[{0}] = [{1}]", i, obj.GetType().FullName);
     	}
     	rets += "\n";
-    	return ret;
+    	return rets;
 
     }
 
@@ -57,7 +58,7 @@ class JsonUtil
     	}
 
     	rets += "{\n";
-
+    	return rets;
     }
 
 
