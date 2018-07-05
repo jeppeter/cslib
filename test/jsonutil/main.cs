@@ -19,9 +19,9 @@ class JsonUtil
     public JsonUtil(string instr, bool filed = false)
     {
         if (filed) {
-            this.m_obj = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(instr));
+            this.m_obj = JObject.Parse(File.ReadAllText(instr));
         } else {
-            this.m_obj = JsonConvert.DeserializeObject<JObject>(instr);
+            this.m_obj = JObject.Parse(instr);
         }
     }
 
@@ -164,9 +164,15 @@ class JsonUtil
                     util = new JsonUtil(args[i], true);
                     Console.Out.WriteLine("{0}", util.ToString());
                 }
+            }  else if (args[i] == "array") {
+                for (i = 1 ; i < args.Length ;i ++) {
+                    JToken arr = JToken.Parse(File.ReadAllText(args[i]));
+
+                }
+                
             } else {
                 throw new Exception(String.Format("unknown [{0}] command", args[0]));
-            }
+            } 
         }
         return;
     }
