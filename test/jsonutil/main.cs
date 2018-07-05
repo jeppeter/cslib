@@ -15,13 +15,15 @@ namespace jsonutil
 {
 class JsonUtil
 {
-    private JObject m_obj;
+    private JToken m_obj;
     public JsonUtil(string instr, bool filed = false)
     {
         if (filed) {
-            this.m_obj = JObject.Parse(File.ReadAllText(instr));
+            //this.m_obj = JObject.Parse(File.ReadAllText(instr));
+            this.m_obj = JToken.Parse(File.ReadAllText(instr));
         } else {
-            this.m_obj = JObject.Parse(instr);
+            //this.m_obj = JObject.Parse(instr);
+            this.m_obj = JToken.Parse(instr);
         }
     }
 
@@ -55,13 +57,47 @@ class JsonUtil
         return rets;
     }
 
+    private string format_token(int tab, string key, JToken tok)
+    {
+        var rets = "";
+        JValue val;
+        var valtype = "";
+
+        if (key.Length > 0) {
+            rets += format_tab_noline(tab, "\"{0}\" :", key);
+        }
+
+        valtype = tok.GetType().FullName;
+        if (valtype == "Newtonsoft.Json.Linq.JValue") {
+            val = (JValue) tok;
+            switch (val.Type) {
+            case JTokenType.Integer:
+                rets += String.Format("{0}", (System.Int64) val.Value);
+                break;
+            case JTokenType.Float:
+                rets += String.Format("{0}", (System.Double) val.Value);
+                break;
+            case JTokenType.String:
+                rets += String.Format("\"{0}\"", (System.String) val.Value);
+                break;
+            default:
+                throw new Exception(String.Format("can not find type {0}", val.Type));
+            }
+        } else if (valtype == "Newtonsoft.Json.Linq.JArray") {
+            rets += this.format_array(tab + 1 , "", tok.Value<JArray>());
+        } else if (valtype == "Newtonsoft.Json.Linq.JObject") {
+            rets += this.format_object(tab + 1 , "", tok.Value<JObject>());
+        } else {
+            throw new Exception(String.Format("unknown type [{0}]", valtype));
+        }
+        return rets;
+    }
+
     private string format_array(int tab, string key, JArray arr)
     {
         var rets = "";
         int i = 0;
         JToken tok;
-        JValue val;
-        string valtype;
 
         if (key.Length > 0) {
             rets += format_tab_noline(tab , "\"{0}\" :", key);
@@ -73,29 +109,7 @@ class JsonUtil
                 rets += ",";
             }
             tok = arr[i];
-            valtype = tok.GetType().FullName;
-            if (valtype == "Newtonsoft.Json.Linq.JValue") {
-                val = (JValue) tok;
-                switch (val.Type) {
-                case JTokenType.Integer:
-                    rets += String.Format("{0}", (System.Int64) val.Value);
-                    break;
-                case JTokenType.Float:
-                    rets += String.Format("{0}", (System.Double) val.Value);
-                    break;
-                case JTokenType.String:
-                    rets += String.Format("\"{0}\"", (System.String) val.Value);
-                    break;
-                default:
-                    throw new Exception(String.Format("can not find type {0}", val.Type));
-                }
-            } else if (valtype == "Newtonsoft.Json.Linq.JArray") {
-                rets += this.format_array(tab + 1 , "", tok.Value<JArray>());
-            } else if (valtype == "Newtonsoft.Json.Linq.JObject") {
-                rets += this.format_object(tab + 1 , "", tok.Value<JObject>());
-            } else {
-                throw new Exception(String.Format("unknown type [{0}]", valtype));
-            }
+            rets += this.format_token(tab, "", tok);
         }
         rets += "]";
         return rets;
@@ -106,13 +120,14 @@ class JsonUtil
     {
         var rets = "";
         List<String> keys;
-        Dictionary<string, object> nobj;
+        Dictionary<string, JToken> nobj;
+        JToken tok;
         int i;
         if (key.Length > 0) {
             rets += format_tab(tab);
             rets += String.Format("\"{0}\" : ", key);
         }
-        nobj = obj.ToObject<Dictionary<string, object>>();
+        nobj = obj.ToObject<Dictionary<string, JToken>>();
         keys = new List<String>(nobj.Keys);
         rets += "{\n";
 
@@ -120,23 +135,8 @@ class JsonUtil
             if (i > 0) {
                 rets += ",\n";
             }
-            switch (nobj[keys[i]].GetType().FullName) {
-            case "System.String":
-                rets += format_tab_noline(tab + 1, "\"{0}\": \"{1}\"" , keys[i], (System.String) nobj[keys[i]]);
-                break;
-            case "System.Int64":
-                rets += format_tab_noline(tab + 1 , "\"{0}\" : {1}", keys[i], (System.Int64) nobj[keys[i]]);
-                break;
-            case "System.Double":
-                rets += format_tab_noline(tab + 1 , "\"{0}\" : {1}", keys[i], (System.Double) nobj[keys[i]]);
-                break;
-            case "Newtonsoft.Json.Linq.JArray":
-                rets += this.format_array(tab + 1 , keys[i], (Newtonsoft.Json.Linq.JArray) nobj[keys[i]]);
-                break;
-            case "Newtonsoft.Json.Linq.JObject":
-                rets += this.format_object(tab + 1 , keys[i], (Newtonsoft.Json.Linq.JObject) nobj[keys[i]]);
-                break;
-            }
+            tok = nobj[keys[i]];
+            rets += this.format_token(tab + 1 , keys[i], tok);
         }
 
         if (keys.Count > 0) {
@@ -149,7 +149,7 @@ class JsonUtil
 
     public override string ToString()
     {
-        var rets = this.format_object(0, "", this.m_obj);
+        var rets = this.format_token(0, "", this.m_obj);
         return rets;
     }
 
@@ -165,14 +165,14 @@ class JsonUtil
                     Console.Out.WriteLine("{0}", util.ToString());
                 }
             }  else if (args[i] == "array") {
-                for (i = 1 ; i < args.Length ;i ++) {
+                for (i = 1 ; i < args.Length ; i ++) {
                     JToken arr = JToken.Parse(File.ReadAllText(args[i]));
 
                 }
-                
+
             } else {
                 throw new Exception(String.Format("unknown [{0}] command", args[0]));
-            } 
+            }
         }
         return;
     }
