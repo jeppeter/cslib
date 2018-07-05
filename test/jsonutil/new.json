@@ -6,5 +6,8 @@
 	"dict" : {
 		"hello" : "good",
 		"float" : 353.3
-	}
+	},
+	"cc" : null,
+	"hel" : true,
+	"xx" : false
 }

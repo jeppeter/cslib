@@ -62,9 +62,10 @@ class JsonUtil
         var rets = "";
         JValue val;
         var valtype = "";
+        string curs ;
 
         if (key.Length > 0) {
-            rets += format_tab_noline(tab, "\"{0}\" :", key);
+            rets += format_tab_noline(tab, "\"{0}\" : ", key);
         }
 
         valtype = tok.GetType().FullName;
@@ -79,6 +80,13 @@ class JsonUtil
                 break;
             case JTokenType.String:
                 rets += String.Format("\"{0}\"", (System.String) val.Value);
+                break;
+            case JTokenType.Null:
+                rets += String.Format("null");
+                break;
+            case JTokenType.Boolean:
+                curs = String.Format("{0}",(System.Boolean) val.Value);
+                rets += curs.ToLower();
                 break;
             default:
                 throw new Exception(String.Format("can not find type {0}", val.Type));
@@ -100,7 +108,7 @@ class JsonUtil
         JToken tok;
 
         if (key.Length > 0) {
-            rets += format_tab_noline(tab , "\"{0}\" :", key);
+            rets += format_tab_noline(tab , "\"{0}\" : ", key);
         }
 
         rets += "[";
