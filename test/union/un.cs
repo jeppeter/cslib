@@ -28,10 +28,12 @@ class Program
 
         k.Num5 = 0.0F;
         k.Num6 = 0.0;
+        k.Text1 = "new";
         k.Num1 = 1;
         Console.WriteLine("num1 {0}", k.Num1);
         Console.WriteLine("Num5 {0}", k.Num5);
         Console.WriteLine("Num6 {0}", k.Num6);
+        Console.WriteLine("Text1 {0}", k.Text1);
         return;
     }
 }
