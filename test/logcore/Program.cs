@@ -49,6 +49,7 @@ namespace logcore
         //Logger.InfoFormat("Running as {0}", WindowsIdentity.GetCurrent().Name);
         Logger.Error("This will appear in red in the console and still be written to file!");
         Console.WriteLine("please enter return to exit");
+        Console.ReadLine();
         }
     }
 }
