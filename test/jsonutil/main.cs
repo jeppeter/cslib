@@ -206,7 +206,7 @@ class JsonUtil
                 throw new Exception(String.Format("unknown [{0}] command", args[0]));
             }
         } else {
-            Usage(3,"need at least one type");
+            Usage(3,"need at least one arg");
         }
         return;
     }
