@@ -57,6 +57,11 @@ class JsonUtil
         return rets;
     }
 
+    public Object get_value(string path)
+    {
+        return null;
+    }
+
     private string format_token(int tab, string key, JToken tok)
     {
         var rets = "";
@@ -94,7 +99,7 @@ class JsonUtil
         } else if (valtype == "Newtonsoft.Json.Linq.JArray") {
             rets += this.format_array(tab + 1 , "", tok.Value<JArray>());
         } else if (valtype == "Newtonsoft.Json.Linq.JObject") {
-            rets += this.format_object(tab + 1 , "", tok.Value<JObject>());
+            rets += this.format_object(tab  , "", tok.Value<JObject>());
         } else {
             throw new Exception(String.Format("unknown type [{0}]", valtype));
         }
