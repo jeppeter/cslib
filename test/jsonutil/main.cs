@@ -210,6 +210,24 @@ class JsonUtil
         return this.__get_value(this.m_obj, pathparts);
     }
 
+    public JToken __set_value(JToken root,string[] pathparts, string type, string valstr)
+    {
+        if (pathparts.Length == 0 || 
+            (pathparts.Length == 1 && pathparts[0] == "")) {
+            return root;
+        }
+
+        return root;
+    }
+
+    public JToken set_value(string path, string type, string valstr)
+    {
+        string[] pathparts;
+        pathparts = path.Split('.');
+        this.m_obj = this.__set_value(this.m_obj, pathparts, type,valstr);
+        return this.m_obj;
+    }
+
 
     private static void Usage(int ec, string fmt)
     {
@@ -241,6 +259,8 @@ class JsonUtil
         Object obj;
         string fname;
         string path;
+        string type;
+        string valstr;
         int i;
         if (args.Length > 0) {
             i = 0;
@@ -268,7 +288,25 @@ class JsonUtil
                     System.Environment.Exit(4);
                 }
             }  else if (args[i] == "set") {
-                Console.Out.WriteLine("not writed");
+                if (args.Length <= (i+4)) {
+                    Usage(4,String.Format("[{0}] need file path type value", args[i]));
+                }
+                fname = args[(i+1)];
+                path = args[(i+2)];
+                type = args[(i+3)];
+                valstr = args[(i+4)];
+                util = new JsonUtil(fname, true);
+                try {
+                    util.set_value(path,type,valstr);
+                    Console.Out.WriteLine("set [{0}] path[{1}] type[{2}] val[{3}]", fname, path, type,valstr);
+                    Console.Out.WriteLine("{0}",util.ToString());
+                }
+                catch(JsonWriterException ec) {
+                    Console.Error.WriteLine("can not set [{0}] type [{1}] val[{2}]", path, type, valstr);
+                    Console.Error.WriteLine("{0}", ec);
+                    System.Environment.Exit(4);
+                }
+
             }else if (args[i] == "--help" || args[i] == "-h") {
                 Usage(0,"");
             }else {
