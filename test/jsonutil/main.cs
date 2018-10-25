@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace jsonutil
 {
+
 class JsonUtil
 {
     private JToken m_obj;
@@ -57,10 +58,6 @@ class JsonUtil
         return rets;
     }
 
-    public Object get_value(string path)
-    {
-        return null;
-    }
 
     private string format_token(int tab, string key, JToken tok)
     {
@@ -159,12 +156,60 @@ class JsonUtil
         return rets;
     }
 
+    public string FormatObject(int tab, string key, Object obj)
+    {
+        return this.format_token(tab,key,obj as JToken);
+    }
+
 
     public override string ToString()
     {
         var rets = this.format_token(0, "", this.m_obj);
         return rets;
     }
+
+    private JToken __get_value(JToken root, string[] pathparts)
+    {
+        JToken obj = root;
+        JObject objroot;
+        string[] newpaths ;
+        int idx;
+        string valtype;
+        if (pathparts.Length == 0 ||
+            (pathparts.Length == 1 && pathparts[0] == "")) {
+            return root;
+        }
+        newpaths = new string[(pathparts.Length - 1)];
+        for (idx = 1; idx < pathparts.Length;idx ++) {
+            newpaths[(idx - 1)] = pathparts[idx];
+        }
+        if (pathparts[0] == "") {
+            return this.__get_value(root,newpaths);
+        }
+
+        valtype = root.GetType().FullName;
+        if (valtype != "Newtonsoft.Json.Linq.JObject") {
+            throw new JsonReaderException(String.Format("[{0}] not get for", pathparts[0]));
+        }
+
+        objroot = root as JObject;
+        if (objroot[pathparts[0]] == null) {
+            throw new JsonReaderException(String.Format("not get [{0}]", pathparts[0]));
+        }
+        obj = objroot[pathparts[0]] as JToken;
+        return this.__get_value(obj, newpaths);
+    }
+
+    public JToken get_value(string path)
+    {
+        string[] pathparts;
+        if (this.m_obj == null) {
+            throw new JsonReaderException(String.Format("not found [{0}]",path));
+        }
+        pathparts = path.Split('.');
+        return this.__get_value(this.m_obj, pathparts);
+    }
+
 
     private static void Usage(int ec, string fmt)
     {
@@ -193,6 +238,9 @@ class JsonUtil
     public static void Main(string[] args)
     {
         JsonUtil util ;
+        Object obj;
+        string fname;
+        string path;
         int i;
         if (args.Length > 0) {
             i = 0;
@@ -202,7 +250,23 @@ class JsonUtil
                     Console.Out.WriteLine("{0}", util.ToString());
                 }
             }  else if (args[i] == "get") {
-                Console.Out.WriteLine("not writed");
+                if (args.Length <= (i+2)) {
+                    Usage(4,String.Format("[{0}] need path [{1}]", args[i], args.Length));
+                }
+                fname = args[i+1];
+                path = args[(i+2)];
+                //Console.Out.WriteLine("fname [{0}] path [{1}]", fname,path);
+
+                util = new JsonUtil(fname, true);
+                try{
+                    obj = util.get_value(path); 
+                    Console.Out.WriteLine("get [{0}] from [{1}]", path,fname);
+                    Console.Out.WriteLine("{0}", util.FormatObject(0,"",obj as JToken));
+                }
+                catch(JsonReaderException ec) {
+                    Console.Error.WriteLine("can not find {0} [{1}]", fname, ec.ToString());
+                    System.Environment.Exit(4);
+                }
             }  else if (args[i] == "set") {
                 Console.Out.WriteLine("not writed");
             }else if (args[i] == "--help" || args[i] == "-h") {
