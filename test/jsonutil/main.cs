@@ -161,6 +161,30 @@ class JsonUtil
         return rets;
     }
 
+    private static void Usage(int ec, string fmt)
+    {
+        var writer = Console.Error;
+        if (ec == 0) {
+            writer = Console.Out;
+        }
+        if (fmt.Length > 0) {
+            writer.WriteLine("{0}", fmt);
+        }
+
+        writer.WriteLine("jsonutil [COMMAND] [OPTIONS]");
+        writer.WriteLine(" ");
+        writer.WriteLine("[COMMAND]");
+        writer.WriteLine("\tparse  files...                to parse json file and debug print");
+        writer.WriteLine("\tget    file path               to get the value from path");
+        writer.WriteLine("\tset    file path type value    to set the value to path on file");
+
+        writer.WriteLine(" ");
+        writer.WriteLine("[OPTIONS]");
+        writer.WriteLine("\t--help|-h                      to display this help information");
+
+        System.Environment.Exit(ec);
+    }
+
     public static void Main(string[] args)
     {
         JsonUtil util ;
@@ -172,15 +196,17 @@ class JsonUtil
                     util = new JsonUtil(args[i], true);
                     Console.Out.WriteLine("{0}", util.ToString());
                 }
-            }  else if (args[i] == "array") {
-                for (i = 1 ; i < args.Length ; i ++) {
-                    JToken arr = JToken.Parse(File.ReadAllText(args[i]));
-
-                }
-
-            } else {
+            }  else if (args[i] == "get") {
+                Console.Out.WriteLine("not writed");
+            }  else if (args[i] == "set") {
+                Console.Out.WriteLine("not writed");
+            }else if (args[i] == "--help" || args[i] == "-h") {
+                Usage(0,"");
+            }else {
                 throw new Exception(String.Format("unknown [{0}] command", args[0]));
             }
+        } else {
+            Usage(3,"need at least one type");
         }
         return;
     }
