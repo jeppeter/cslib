@@ -206,24 +206,133 @@ class JsonUtil
         if (this.m_obj == null) {
             throw new JsonReaderException(String.Format("not found [{0}]",path));
         }
-        pathparts = path.Split('.');
+        pathparts = path.Split('/');
         return this.__get_value(this.m_obj, pathparts);
+    }
+
+    private JToken __create_value(string type, string valstr)
+    {
+        JToken tok;
+        JValue jval;
+        JArray jarr;
+        JObject jobj;
+        int ival;
+        float fval;
+        Boolean bval;
+        if (type == "string") {
+            jval = new JValue(valstr);
+            tok = jval as JToken;
+        } else if (type == "int") {
+            try{
+                ival = int.Parse(valstr);    
+            }
+            catch (FormatException ec) {
+                FormatException bc;
+                bc = ec;
+                ec =bc;
+                throw new JsonWriterException(String.Format("{0} not valid int", valstr));
+            }
+            
+            jval = new JValue(ival);
+            tok = jval as JToken;
+        } else if (type == "float") {
+            try{
+                fval = float.Parse(valstr);    
+            }
+            catch(FormatException ec) {
+                FormatException bc;
+                bc = ec;
+                ec = bc;
+                throw new JsonWriterException(String.Format("{0} not valid float", valstr));
+            }
+            
+            jval = new JValue(fval);
+            tok = jval as JToken;
+        } else if (type == "null") {
+            jval = JValue.CreateNull();
+            tok = jval as JToken;
+        } else if (type == "bool") {
+            bval = false;
+            if (String.Compare(valstr,"true", StringComparison.OrdinalIgnoreCase) == 0) {
+                bval = true;
+            }
+            jval = new JValue(bval);
+            tok = jval as JToken;
+        } else if (type == "array") {
+            try{
+                jarr = JArray.Parse(valstr);    
+            }
+            catch(JsonReaderException ec) {
+                JsonReaderException bc;
+                bc = ec;
+                ec =bc;
+                throw new JsonWriterException(String.Format("{0} not valid array", valstr));
+            }
+            
+            tok = jarr as JToken;
+        } else if (type == "object") {
+            try {
+                jobj = JObject.Parse(valstr);    
+            }
+            catch (JsonReaderException ec) {
+                JsonReaderException bc;
+                bc= ec;
+                ec =bc;
+                throw new JsonWriterException(String.Format("{0} not valid object", valstr));   
+            }
+            
+            tok = jobj as JToken;
+        } else {
+            throw new JsonWriterException(String.Format("not support [{0}] type", type));
+        }
+        return tok;
     }
 
     public JToken __set_value(JToken root,string[] pathparts, string type, string valstr)
     {
+        JObject jobj;
+        string[] newpaths ;
+        JToken curtok;
+        int idx;
         if (pathparts.Length == 0 || 
             (pathparts.Length == 1 && pathparts[0] == "")) {
+            /*this means we should make this function*/
+            return this.__create_value(type,valstr);
+        }
+
+        newpaths = new string[(pathparts.Length - 1)];
+        for (idx = 1; idx < pathparts.Length;idx ++) {
+            newpaths[(idx - 1)] = pathparts[idx];
+        }
+
+        if (pathparts[0] == "") {
+            this.__set_value(root, newpaths, type, valstr);
             return root;
         }
 
+        jobj = root as JObject;
+        if (pathparts.Length > 1) {
+            curtok = jobj[pathparts[0]] ;
+            if (curtok == null) {
+                jobj[pathparts[0]] = new JObject();
+            } else {
+                if (curtok.GetType().FullName != "Newtonsoft.Json.Linq.JObject") {
+                    Console.Error.WriteLine("change [{0}] into JOBject", pathparts[0]);
+                    jobj[pathparts[0]] = new JObject();
+                }
+            }
+            this.__set_value(jobj[pathparts[0]], newpaths, type, valstr);
+            return root;
+        }
+
+        jobj[pathparts[0]] = this.__create_value(type,valstr);
         return root;
     }
 
     public JToken set_value(string path, string type, string valstr)
     {
         string[] pathparts;
-        pathparts = path.Split('.');
+        pathparts = path.Split('/');
         this.m_obj = this.__set_value(this.m_obj, pathparts, type,valstr);
         return this.m_obj;
     }
