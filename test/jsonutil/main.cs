@@ -19,13 +19,22 @@ class JsonUtil
     private JToken m_obj;
     public JsonUtil(string instr, bool filed = false)
     {
-        if (filed) {
-            //this.m_obj = JObject.Parse(File.ReadAllText(instr));
-            this.m_obj = JToken.Parse(File.ReadAllText(instr));
-        } else {
-            //this.m_obj = JObject.Parse(instr);
-            this.m_obj = JToken.Parse(instr);
+        try {
+            if (filed) {
+                //this.m_obj = JObject.Parse(File.ReadAllText(instr));
+                this.m_obj = JToken.Parse(File.ReadAllText(instr));
+
+            } else {
+                this.m_obj = JToken.Parse(instr);
+            }
+        } catch (Exception ec)  {
+            Exception bc;
+            bc = ec;
+            ec = bc;
+            Console.Error.WriteLine($"catch exception for {instr}\n{ec}");
+            this.m_obj = new JObject() as JToken;
         }
+
     }
 
     private string format_tab(int tab)
@@ -87,7 +96,7 @@ class JsonUtil
                 rets += String.Format("null");
                 break;
             case JTokenType.Boolean:
-                curs = String.Format("{0}",(System.Boolean) val.Value);
+                curs = String.Format("{0}", (System.Boolean) val.Value);
                 rets += curs.ToLower();
                 break;
             default:
@@ -158,7 +167,7 @@ class JsonUtil
 
     public string FormatObject(int tab, string key, Object obj)
     {
-        return this.format_token(tab,key,obj as JToken);
+        return this.format_token(tab, key, obj as JToken);
     }
 
 
@@ -176,15 +185,15 @@ class JsonUtil
         int idx;
         string valtype;
         if (pathparts.Length == 0 ||
-            (pathparts.Length == 1 && pathparts[0] == "")) {
+                (pathparts.Length == 1 && pathparts[0] == "")) {
             return root;
         }
         newpaths = new string[(pathparts.Length - 1)];
-        for (idx = 1; idx < pathparts.Length;idx ++) {
+        for (idx = 1; idx < pathparts.Length; idx ++) {
             newpaths[(idx - 1)] = pathparts[idx];
         }
         if (pathparts[0] == "") {
-            return this.__get_value(root,newpaths);
+            return this.__get_value(root, newpaths);
         }
 
         valtype = root.GetType().FullName;
@@ -204,7 +213,7 @@ class JsonUtil
     {
         string[] pathparts;
         if (this.m_obj == null) {
-            throw new JsonReaderException(String.Format("not found [{0}]",path));
+            throw new JsonReaderException(String.Format("not found [{0}]", path));
         }
         pathparts = path.Split('/');
         return this.__get_value(this.m_obj, pathparts);
@@ -223,29 +232,27 @@ class JsonUtil
             jval = new JValue(valstr);
             tok = jval as JToken;
         } else if (type == "int") {
-            try{
-                ival = int.Parse(valstr);    
-            }
-            catch (FormatException ec) {
+            try {
+                ival = int.Parse(valstr);
+            } catch (FormatException ec) {
                 FormatException bc;
                 bc = ec;
-                ec =bc;
+                ec = bc;
                 throw new JsonWriterException(String.Format("{0} not valid int", valstr));
             }
-            
+
             jval = new JValue(ival);
             tok = jval as JToken;
         } else if (type == "float") {
-            try{
-                fval = float.Parse(valstr);    
-            }
-            catch(FormatException ec) {
+            try {
+                fval = float.Parse(valstr);
+            } catch (FormatException ec) {
                 FormatException bc;
                 bc = ec;
                 ec = bc;
                 throw new JsonWriterException(String.Format("{0} not valid float", valstr));
             }
-            
+
             jval = new JValue(fval);
             tok = jval as JToken;
         } else if (type == "null") {
@@ -253,34 +260,32 @@ class JsonUtil
             tok = jval as JToken;
         } else if (type == "bool") {
             bval = false;
-            if (String.Compare(valstr,"true", StringComparison.OrdinalIgnoreCase) == 0) {
+            if (String.Compare(valstr, "true", StringComparison.OrdinalIgnoreCase) == 0) {
                 bval = true;
             }
             jval = new JValue(bval);
             tok = jval as JToken;
         } else if (type == "array") {
-            try{
-                jarr = JArray.Parse(valstr);    
-            }
-            catch(JsonReaderException ec) {
+            try {
+                jarr = JArray.Parse(valstr);
+            } catch (JsonReaderException ec) {
                 JsonReaderException bc;
                 bc = ec;
-                ec =bc;
+                ec = bc;
                 throw new JsonWriterException(String.Format("{0} not valid array", valstr));
             }
-            
+
             tok = jarr as JToken;
         } else if (type == "object") {
             try {
-                jobj = JObject.Parse(valstr);    
-            }
-            catch (JsonReaderException ec) {
+                jobj = JObject.Parse(valstr);
+            } catch (JsonReaderException ec) {
                 JsonReaderException bc;
-                bc= ec;
-                ec =bc;
-                throw new JsonWriterException(String.Format("{0} not valid object", valstr));   
+                bc = ec;
+                ec = bc;
+                throw new JsonWriterException(String.Format("{0} not valid object", valstr));
             }
-            
+
             tok = jobj as JToken;
         } else {
             throw new JsonWriterException(String.Format("not support [{0}] type", type));
@@ -288,20 +293,20 @@ class JsonUtil
         return tok;
     }
 
-    public JToken __set_value(JToken root,string[] pathparts, string type, string valstr)
+    public JToken __set_value(JToken root, string[] pathparts, string type, string valstr)
     {
         JObject jobj;
         string[] newpaths ;
         JToken curtok;
         int idx;
-        if (pathparts.Length == 0 || 
-            (pathparts.Length == 1 && pathparts[0] == "")) {
+        if (pathparts.Length == 0 ||
+                (pathparts.Length == 1 && pathparts[0] == "")) {
             /*this means we should make this function*/
-            return this.__create_value(type,valstr);
+            return this.__create_value(type, valstr);
         }
 
         newpaths = new string[(pathparts.Length - 1)];
-        for (idx = 1; idx < pathparts.Length;idx ++) {
+        for (idx = 1; idx < pathparts.Length; idx ++) {
             newpaths[(idx - 1)] = pathparts[idx];
         }
 
@@ -325,7 +330,7 @@ class JsonUtil
             return root;
         }
 
-        jobj[pathparts[0]] = this.__create_value(type,valstr);
+        jobj[pathparts[0]] = this.__create_value(type, valstr);
         return root;
     }
 
@@ -333,7 +338,7 @@ class JsonUtil
     {
         string[] pathparts;
         pathparts = path.Split('/');
-        this.m_obj = this.__set_value(this.m_obj, pathparts, type,valstr);
+        this.m_obj = this.__set_value(this.m_obj, pathparts, type, valstr);
         return this.m_obj;
     }
 
@@ -379,50 +384,48 @@ class JsonUtil
                     Console.Out.WriteLine("{0}", util.ToString());
                 }
             }  else if (args[i] == "get") {
-                if (args.Length <= (i+2)) {
-                    Usage(4,String.Format("[{0}] need path [{1}]", args[i], args.Length));
+                if (args.Length <= (i + 2)) {
+                    Usage(4, String.Format("[{0}] need path [{1}]", args[i], args.Length));
                 }
-                fname = args[i+1];
-                path = args[(i+2)];
+                fname = args[i + 1];
+                path = args[(i + 2)];
                 //Console.Out.WriteLine("fname [{0}] path [{1}]", fname,path);
 
                 util = new JsonUtil(fname, true);
-                try{
-                    obj = util.get_value(path); 
-                    Console.Out.WriteLine("get [{0}] from [{1}]", path,fname);
-                    Console.Out.WriteLine("{0}", util.FormatObject(0,"",obj as JToken));
-                }
-                catch(JsonReaderException ec) {
+                try {
+                    obj = util.get_value(path);
+                    Console.Out.WriteLine("get [{0}] from [{1}]", path, fname);
+                    Console.Out.WriteLine("{0}", util.FormatObject(0, "", obj as JToken));
+                } catch (JsonReaderException ec) {
                     Console.Error.WriteLine("can not find {0} [{1}]", fname, ec.ToString());
                     System.Environment.Exit(4);
                 }
             }  else if (args[i] == "set") {
-                if (args.Length <= (i+4)) {
-                    Usage(4,String.Format("[{0}] need file path type value", args[i]));
+                if (args.Length <= (i + 4)) {
+                    Usage(4, String.Format("[{0}] need file path type value", args[i]));
                 }
-                fname = args[(i+1)];
-                path = args[(i+2)];
-                type = args[(i+3)];
-                valstr = args[(i+4)];
+                fname = args[(i + 1)];
+                path = args[(i + 2)];
+                type = args[(i + 3)];
+                valstr = args[(i + 4)];
                 util = new JsonUtil(fname, true);
                 try {
-                    util.set_value(path,type,valstr);
-                    Console.Out.WriteLine("set [{0}] path[{1}] type[{2}] val[{3}]", fname, path, type,valstr);
-                    Console.Out.WriteLine("{0}",util.ToString());
-                }
-                catch(JsonWriterException ec) {
+                    util.set_value(path, type, valstr);
+                    Console.Out.WriteLine("set [{0}] path[{1}] type[{2}] val[{3}]", fname, path, type, valstr);
+                    Console.Out.WriteLine("{0}", util.ToString());
+                } catch (JsonWriterException ec) {
                     Console.Error.WriteLine("can not set [{0}] type [{1}] val[{2}]", path, type, valstr);
                     Console.Error.WriteLine("{0}", ec);
                     System.Environment.Exit(4);
                 }
 
-            }else if (args[i] == "--help" || args[i] == "-h") {
-                Usage(0,"");
-            }else {
+            } else if (args[i] == "--help" || args[i] == "-h") {
+                Usage(0, "");
+            } else {
                 throw new Exception(String.Format("unknown [{0}] command", args[0]));
             }
         } else {
-            Usage(3,"need at least one arg");
+            Usage(3, "need at least one arg");
         }
         return;
     }
