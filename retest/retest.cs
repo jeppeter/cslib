@@ -120,7 +120,7 @@ public class retest
         string[] sp;
         int j;
         for (i = 2; i < this.m_args.Length; i++) {
-            sp = regex.Split(this.m_args[i],0xffff,0);
+            sp = regex.Split(this.m_args[i]);
             Console.Out.Write("[{0}] split [{1}]", this.m_args[1], this.m_args[i]);
             for (j=0;j<sp.Length;j++) {
                 if ((j%5) == 0) {
