@@ -32,6 +32,7 @@ public class retest
         writer.WriteLine("retest [cmd]...");
         writer.WriteLine("\tmatch restr instr...");
         writer.WriteLine("\tfind restr instr...");
+        writer.WriteLine("\tsplit restr instr...");
         Environment.Exit(ec);
     }
 
@@ -77,7 +78,7 @@ public class retest
     {
         int i;
         if (this.m_args.Length < 3) {
-            throw new NotArgument(String.Format("match restr instr..."));
+            throw new NotArgument(String.Format("find restr instr..."));
         }
         Regex regex = new Regex(this.m_args[1]);
         MatchCollection ms;
@@ -109,6 +110,29 @@ public class retest
         return 0;
     }
 
+    private int split_handler()
+    {
+        int i;
+        if (this.m_args.Length < 3) {
+            throw new NotArgument(String.Format("split restr instr..."));
+        }
+        Regex regex = new Regex(this.m_args[1]);
+        string[] sp;
+        int j;
+        for (i = 2; i < this.m_args.Length; i++) {
+            sp = regex.Split(this.m_args[i],0xffff,0);
+            Console.Out.Write("[{0}] split [{1}]", this.m_args[1], this.m_args[i]);
+            for (j=0;j<sp.Length;j++) {
+                if ((j%5) == 0) {
+                    Console.Out.Write("\n\t");
+                }
+                Console.Out.Write(" {0}", sp[j]);
+            }
+            Console.Out.Write("\n");
+        }
+        return 0;        
+    }
+
     private int process()
     {
         switch (this.m_args[0]) {
@@ -116,6 +140,8 @@ public class retest
             return this.match_handler();
         case "find":
             return this.findall_handler();
+        case "split":
+            return this.split_handler();
         case "-h":
             this.Usage(0, "");
             return 0;
