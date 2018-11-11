@@ -29,12 +29,44 @@ namespace logcode
 		{
 			Logger l;
 			//Level lvl;
-			int i;
+			//int i;
 			string lvlstr="ERROR";
+			string appname = String.Format("{0}_APPENDER", name).ToUpper();
+			ConsoleAppender app=null;
 			this._create_repository(name);
-			this.m_logger = LogManager.GetLogger(name,name);
-			l = (Logger) this.m_logger.Logger;
-			l.Level = l.Hierarchy.LevelMap[lvlstr];
+			if (LogManager.Exists(name,name) != null) {
+				this.m_logger = LogManager.GetLogger(name,name);
+				l = (Logger) this.m_logger.Logger;
+				l.Level = l.Hierarchy.LevelMap[lvlstr];
+			} else {
+				this.m_logger = LogManager.GetLogger(name,name);
+				l = (Logger) this.m_logger.Logger;
+				l.Level = l.Hierarchy.LevelMap["ALL"];
+				app = new ConsoleAppender();
+				app.Name = appname;
+				app.Target = "Console.Error";
+				l.AddAppender(app);
+			}
+		}
+
+		public void Debug(object msg)
+		{
+			this.m_logger.Debug(msg);
+		}
+
+		public void Error(object msg)
+		{
+			this.m_logger.Error(msg);
+		}
+
+		public void Warn(object msg)
+		{
+			this.m_logger.Warn(msg);
+		}
+
+		public void Info(object msg)
+		{
+			this.m_logger.Info(msg);
 		}
 	}
 
@@ -43,6 +75,10 @@ namespace logcode
         static void Main(string[] args)
         {
             _LogObject logobj = new _LogObject("func");
+            logobj.Info("hello world");
+            logobj.Debug("hello world");
+            logobj.Warn("hello world");
+            logobj.Error("hello world");
             return;
         }
     }
