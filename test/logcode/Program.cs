@@ -31,7 +31,7 @@ namespace logcode
 			Logger l;
 			//Level lvl;
 			//int i;
-			string lvlstr="ERROR";
+			string lvlstr="DEBUG";
 			string appname = String.Format("{0}_APPENDER", name).ToUpper();
 			ConsoleAppender app=null;
 			this._create_repository(name);
@@ -46,7 +46,7 @@ namespace logcode
 				patternLayout.ActivateOptions();
 				this.m_logger = LogManager.GetLogger(name,name);
 				l = (Logger) this.m_logger.Logger;
-				l.Level = l.Hierarchy.LevelMap["DEBUG"];
+				l.Level = l.Hierarchy.LevelMap[lvlstr];
 				app = new ConsoleAppender();
 				app.Name = appname;
 				app.Layout = patternLayout;
@@ -124,11 +124,18 @@ namespace logcode
         static void Main(string[] args)
         {
             _LogObject logobj = new _LogObject("func");
+            _LogObject secobj = new _LogObject("func");
             logobj.Info("hello world");
             logobj.Debug("hello world");
             logobj.Warn("hello world");
             logobj.Error("hello world");
             logobj.Fatal("hello world");
+
+            secobj.Info("hello world");
+            secobj.Debug("hello world");
+            secobj.Warn("hello world");
+            secobj.Error("hello world");
+            secobj.Fatal("hello world");
             return;
         }
     }
