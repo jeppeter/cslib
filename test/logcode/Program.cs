@@ -39,13 +39,20 @@ namespace logcode
 				l = (Logger) this.m_logger.Logger;
 				l.Level = l.Hierarchy.LevelMap[lvlstr];
 			} else {
+				PatternLayout patternLayout = new PatternLayout();
+				Hierarchy hr;
+				patternLayout.ConversionPattern = "%date [%thread] %-5level %logger - %message%newline";
+				patternLayout.ActivateOptions();
 				this.m_logger = LogManager.GetLogger(name,name);
 				l = (Logger) this.m_logger.Logger;
-				l.Level = l.Hierarchy.LevelMap["ALL"];
+				l.Level = l.Hierarchy.LevelMap["DEBUG"];
 				app = new ConsoleAppender();
 				app.Name = appname;
-				app.Target = "Console.Error";
+				app.Layout = patternLayout;
+				//app.Target = "Console.Error";
 				l.AddAppender(app);
+				hr = (Hierarchy)LogManager.GetRepository(name);
+				hr.Configured = true;
 			}
 		}
 
@@ -68,6 +75,11 @@ namespace logcode
 		{
 			this.m_logger.Info(msg);
 		}
+
+		public void Fatal(object msg)
+		{
+			this.m_logger.Fatal(msg);
+		}
 	}
 
     class Program
@@ -79,6 +91,7 @@ namespace logcode
             logobj.Debug("hello world");
             logobj.Warn("hello world");
             logobj.Error("hello world");
+            logobj.Fatal("hello world");
             return;
         }
     }
