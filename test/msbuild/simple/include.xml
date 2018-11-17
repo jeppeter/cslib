@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--项都要包含在ItemGroup元素内部-->
+  <ItemGroup>
+    <!--声明一个"CSFile"的项，Include表示引入"csfile1.cs"文件-->
+    <CSFile Include="csfile1.cs">
+      <!--Version表示项的元数据（附加信息）-->
+      <Version>1.0.0.0</Version>
+    </CSFile>
+    <!--也可用";"一次引入多个文件-->
+    <CSFile Include="csfile2.cs;csfile3.cs"/>
+  </ItemGroup>
+  <Target Name="build">
+    <!--@引用项的值，默认以";"分割开-->
+    <!--输出"csfile1.cs;csfile2.cs;csfile3.cs"-->
+    <Message Text="@(CSFile)"></Message>
+    <!--可以加第二个参数替换默认的";"分隔符-->
+    <!--输出"csfile1.cs+csfile2.cs+csfile3.cs"-->
+    <Message Text="@(CSFile,'+')"></Message>
+    <!--%引用项的元数据，输出"1.0.0.0"-->
+    <Message Text="%(CSFile.Version)"></Message>
+  </Target>
+</Project>
