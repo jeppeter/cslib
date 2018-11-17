@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Debug" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<AssemblyName>MSBuildSample</AssemblyName>
 		<OutputPath>Bin\</OutputPath>
@@ -6,12 +6,17 @@
   	<ItemGroup>
 		<Compile Include="Helloworld.cs" />
 	</ItemGroup>
-	<Target Name="Build" Inputs="@(Compile)" Outputs="$(OutputPath)$(AssemblyName).exe">
+	<Target Name="Debug" Inputs="@(Compile)" Outputs="$(OutputPath)$(AssemblyName).exe">
 		<MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
-		<Csc Sources="@(Compile)" OutputAssembly="$(OutputPath)$(AssemblyName).exe"/>
+		<Csc Sources="@(Compile)" DefineConstants='DebugConfig' OutputAssembly="$(OutputPath)$(AssemblyName).exe"/>
+	</Target>
+	<Target Name="Release" Inputs="@(Compile)" Outputs="$(OutputPath)$(AssemblyName).exe">
+		<MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
+		<Csc Sources="@(Compile)" DefineConstants='' OutputAssembly="$(OutputPath)$(AssemblyName).exe"/>
 	</Target>
 	<Target Name="Clean" >
 		<Delete Files="$(OutputPath)$(AssemblyName).exe" />
 	</Target>
-	<Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+	<Target Name="ReDebug" DependsOnTargets="Clean;Debug" />
+	<Target Name="ReRelease" DependsOnTargets="Clean;Release" />
 </Project>
