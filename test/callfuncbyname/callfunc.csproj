@@ -1,0 +1,25 @@
+<Project DefaultTargets="Debug" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<DllName>calldll</DllName>
+		<ExeName>callfunc</ExeName>
+	</PropertyGroup>
+	<ItemGroup>
+		<CSFilesExe Include="callfunc.cs" />
+		<CSFilesDll Include="dllfunc.cs" />
+	</ItemGroup>
+	<Target Name="Debug"  Inputs="@(CSFilesExe)" Outputs="$(ExeName).exe" DependsOnTargets="DllDebug">
+		<Csc Sources="@(CSFilesExe)" OutputAssembly="$(ExeName).exe" TargetType="exe" DebugType="full" />
+	</Target>
+	<Target Name="DllDebug" Inputs="@(CSFilesDll)" Outputs="$(DllName).dll" >
+		<Csc Sources="@(CSFilesDll)" OutputAssembly="$(DllName).dll" TargetType="Library" DebugType="full" />
+	</Target>
+	<Target Name="Release"  Inputs="@(CSFilesExe)" Outputs="$(ExeName).exe" DependsOnTargets="DllRelease">
+		<Csc Sources="@(CSFilesExe)" OutputAssembly="$(ExeName).exe" TargetType="exe" />
+	</Target>
+	<Target Name="DllRelease" Inputs="@(CSFilesDll)" Outputs="$(DllName).dll" >
+		<Csc Sources="@(CSFilesDll)" OutputAssembly="$(DllName).dll" TargetType="Library" />
+	</Target>
+	<Target Name="Clean">
+		<Delete Files="$(ExeName).exe;$(DllName).dll;$(ExeName).pdb;$(DllName).pdb" />
+	</Target>
+</Project>
