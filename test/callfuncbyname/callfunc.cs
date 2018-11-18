@@ -8,6 +8,12 @@ namespace CallFuncExe
 	public class CallFuncExe
 	{
 
+		public static string CC(string n)
+		{
+			Console.Out.WriteLine("CC func [{0}]", n);
+			return n;
+		}
+
 		public static object CallFunc(string dllname, string spacename, string clsname, string methodname, object[] inputs)
 		{
 			Assembly dll=null;
