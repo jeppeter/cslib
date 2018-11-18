@@ -1,0 +1,18 @@
+<Project DefaultTargets="Debug" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<ExeName>combine</ExeName>
+	</PropertyGroup>
+	<ItemGroup>
+		<CSFilesExe Include="main.cs" />
+		<CSFilesExe Include="priv.cs" />
+	</ItemGroup>
+	<Target Name="Debug"  Inputs="@(CSFilesExe)" Outputs="$(ExeName).exe">
+		<Csc Sources="@(CSFilesExe)" OutputAssembly="$(ExeName).exe" TargetType="exe" DebugType="full" />
+	</Target>
+	<Target Name="Release"  Inputs="@(CSFilesExe)" Outputs="$(ExeName).exe">
+		<Csc Sources="@(CSFilesExe)" OutputAssembly="$(ExeName).exe" TargetType="exe" />
+	</Target>
+	<Target Name="Clean">
+		<Delete Files="$(ExeName).exe;$(ExeName).pdb" />
+	</Target>
+</Project>
