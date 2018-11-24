@@ -55,11 +55,9 @@ namespace LogObj
 			{
 				if (m != null) {
 					if (waited) {
-						Console.Out.WriteLine("release");
 						m.ReleaseMutex();
 					}
 					waited = true;
-					Console.Out.WriteLine("Dispose");
 					m.Dispose();
 				}
 				m = null;
@@ -158,8 +156,40 @@ namespace LogObj
 			}
 		}
 
+		private string __format_message(params object[] strs)
+		{
+			string fmtstr = "";
+			StackTrace stk = new StackTrace();
+			string s = strs[0].GetType().Name;
+			object[] nparams  = strs;
+			StackFrame frm;
+			MethodBase meth;
+			int i;
+			int stkidx=1;
+			if (s == "Int32") {
+				nparams = new object[strs.Length-1];
+				stkidx = (int)strs[0];
+				for (i=0;i<(strs.Length-1) ; i++) {
+					nparams[i] =strs[(i+1)];
+				}
+				Console.Out.WriteLine("stkidx[{0}]", stkidx);
+			}
+
+			frm = stk.GetFrame(stkidx);
+			if (frm != null) {
+				meth = frm.GetMethod();
+				fmtstr += String.Format("[{0}:{1}:{2}] ", meth.Name, frm.GetFileName(), frm.GetFileLineNumber());
+			}
+
+			fmtstr += String.Format(nparams[0],nparams[1]);
+
+			Console.Out.WriteLine("{0}", fmtstr);
+			return fmtstr;
+		}
+
 		public void Fatal(params object[] strs)
 		{
+			string s = this.__format_message(strs);
 			return;
 		}
 
@@ -222,6 +252,7 @@ namespace LogObj
 			log.Trace(1,cargs);
 			log.Warn(1,cargs);
 			log.Fatal(1,cargs);
+			log.Fatal(50,cargs);
 			return;
 		}
 	}
