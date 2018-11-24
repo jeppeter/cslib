@@ -22,13 +22,14 @@ namespace Mux
 					goto try_again;
 				}
 			}
+		wait_one:
 			try {
 				m.WaitOne();				
 				waited = true;				
 			}
 			catch(AbandonedMutexException) {
 				if (m != null) {
-					waited = true;	
+					goto wait_one;
 				}
 			}
 		}
