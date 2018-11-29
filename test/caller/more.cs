@@ -9,13 +9,16 @@ namespace Call5
 	{
 		public static string cc_call(int num)
 		{
-			StackTrace stk = new StackTrace();
-			MethodBase info = stk.GetFrame(num).GetMethod();
+			StackTrace stk = new StackTrace(true);
+			StackFrame frm = stk.GetFrame(num);
+			MethodBase info = frm.GetMethod();
 			return string.Format(
-			                 "{0}.{1}.{2}()",
+			                 "{0}.{1}.{2}() [{3}:{4}]",
 			                 info.ReflectedType.Namespace,
 			                 info.ReflectedType.Name,
-			                 info.Name);
+			                 info.Name,
+			                 frm.GetFileName(),
+			                 frm.GetFileLineNumber());
 		}
 
 	}	
