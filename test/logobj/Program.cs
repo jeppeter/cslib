@@ -159,25 +159,24 @@ namespace LogObj
 		private string __format_message(params object[] strs)
 		{
 			string fmtstr = "";
-			StackTrace stk = new StackTrace();
+			StackTrace stk = new StackTrace(true);
 			string s = strs[0].GetType().Name;
-			object[] nparams ;
+			object[] nparams;
 			StackFrame frm;
 			MethodBase meth;
 			string basefmt = "";
 			int mc=0;
 			int i;
 			int addi = 1;
-			int stkidx=1;
+			int stkidx=2;
 			mc = strs.Length - 1;
 			if (s == "Int32") {
 				nparams = new object[strs.Length-1];
 				stkidx = (int)strs[0];
-				Console.Out.WriteLine("stkidx[{0}]", stkidx);
+				stkidx += 1;
 				addi = 2;
 				mc = strs.Length - 2;
 				s = strs[1].GetType().Name;
-				Console.Out.WriteLine("type [{0}]", s);
 				basefmt = (string)strs[1];
 			} else {
 				basefmt = (string) strs[0];
@@ -196,38 +195,42 @@ namespace LogObj
 
 			fmtstr += String.Format(basefmt,nparams);
 
-			Console.Out.WriteLine("{0}", fmtstr);
+			//Console.Out.WriteLine("{0}", fmtstr);
 			return fmtstr;
 		}
 
 		public void Fatal(params object[] strs)
 		{
 			string s = this.__format_message(strs);
+			this.m_logger.Fatal(s);
 			return;
 		}
 
 		public void Error(params object[] strs)
 		{
+			string s = this.__format_message(strs);
+			this.m_logger.Error(s);
 			return;
 		}
 
 		public void Warn(params object[] strs)
 		{
+			string s = this.__format_message(strs);
+			this.m_logger.Warn(s);
 			return;
 		}
 
 		public void Info(params object[] strs)
 		{
+			string s = this.__format_message(strs);
+			this.m_logger.Info(s);
 			return;
 		}
 
 		public void Debug(params object[] strs)
 		{
-			return;
-		}
-
-		public void Trace(params object[] strs)
-		{
+			string s = this.__format_message(strs);
+			this.m_logger.Debug(s);
 			return;
 		}
 	}
@@ -248,14 +251,12 @@ namespace LogObj
 			log.Info("Hello cc {0} {1}","bb",320);
 			log.Error("Hello cc {0} {1}","bb",320);
 			log.Debug("Hello cc {0} {1}","bb",320);
-			log.Trace("Hello cc {0} {1}","bb",320);
 			log.Warn("Hello cc {0} {1}","bb",320);
 			log.Fatal("Hello cc {0} {1}","bb",320);
 
 			log.Info(1,"Hello cc {0} {1}","bb",320);
 			log.Error(1,"Hello cc {0} {1}","bb",320);
 			log.Debug(1,"Hello cc {0} {1}","bb",320);
-			log.Trace(1,"Hello cc {0} {1}","bb",320);
 			log.Warn(1,"Hello cc {0} {1}","bb",320);
 			log.Fatal(1,"Hello cc {0} {1}","bb",320);
 			log.Fatal(50,"Hello cc {0} {1}","bb",320);
