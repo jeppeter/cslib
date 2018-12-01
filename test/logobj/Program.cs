@@ -233,6 +233,12 @@ namespace LogObj
 			this.m_logger.Debug(s);
 			return;
 		}
+
+		public object call_func(string funcname, params object[] args)
+		{
+			
+			return null;
+		}
 	}
 
 	public class ObjCC
