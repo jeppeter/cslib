@@ -5,11 +5,32 @@ using System.Reflection;
 
 namespace CallAble
 {
+	public class ParseException : Exception
+	{
+		public ParseException(string str) : base(str)
+		{
+		}
+	}
+
 	public class CallAble
 	{
+		public CallAble()
+		{
+
+		}
+
+		private void __throw_exception(string s)
+		{
+			throw new ParseException(s);
+		}
 		private MethodBase _check_funcname(Type tinfo,string funcname, params  object[] args)
 		{
 			MethodBase meth;
+			MethodInfo[] infos;
+			infos = tinfo.GetMethods();
+			foreach (var i in infos) {
+				Console.Out.WriteLine("{0}", i);
+			}
 			meth = tinfo.GetMethod(funcname, BindingFlags.Static);
 			if (meth == null) {
 				return null;
@@ -17,7 +38,7 @@ namespace CallAble
 			return meth;
 		}
 
-		private MethodInfo _call_func_inner(string dllname, string nspc, string clsname,string fname, params object[] args)
+		private MethodBase _call_func_inner(string dllname, string nspc, string clsname,string fname, params object[] args)
 		{
 			int i;
 			StackFrame frm;
@@ -36,17 +57,19 @@ namespace CallAble
 				for (i=0;i<stk.FrameCount;i++) {
 					frm = stk.GetFrame(i);
 					curbase = frm.GetMethod();
-					curtype = curbase.GetType();
-					meth = this._check_funcname(fname, args);
+					curtype = curbase.DeclaringType;
+					Console.Out.WriteLine("curbase [{0}] curtype [{1}] ", curbase, curtype);
+					curtype = Type.GetType(curtype.FullName);
+					Console.Out.WriteLine("curtype [{0}]", curtype);
+					meth = this._check_funcname(curtype,fname, args);
 					if (meth != null) {
 						return meth;
 					}
 				}
-				return null;
 			} else if (dllname.Length <= 0 && 
 				nspc.Length <= 0) {
 				/*now to get */
-				curtype = typeof(clsname);
+				curtype = Type.GetType(clsname);
 				if (curtype == null) {
 					return null;
 				}
@@ -54,15 +77,13 @@ namespace CallAble
 				if (meth != null) {
 					return meth;
 				}
-				return null;
 			} else if (dllname.Length <= 0) {
 				bindname = String.Format("{0}.{1}", nspc, clsname);
-				curtype = typeof(bindname);
+				curtype = Type.GetType(bindname);
 				meth = this._check_funcname(curtype, fname, args);
 				if (meth != null) {
 					return meth;
 				}
-				return null;
 			} else {
 				bindname = String.Format("{0}.{1}", nspc, clsname);
 				dl = String.Format("{0}.dll",dllname);
@@ -78,7 +99,6 @@ namespace CallAble
 				if (meth != null){
 					return meth;
 				}
-				return null;
 			}
 			return null;
 		}
@@ -86,11 +106,14 @@ namespace CallAble
 		public object call_func(string funcname, params object[] args)
 		{
 			string[] sarr;
-			string fn = "";
-			string cls = "";
 			string namespc = "";
-			MethodInfo meth = null;
-			sarr = String.Split(".", funcname);
+			MethodBase meth = null;
+			int i;
+			if (funcname.Length == 0) {
+				this.__throw_exception(String.Format("null funcname can not accept"));
+			}
+
+			sarr = funcname.Split('.');
 			if (sarr.Length == 1) {
 				meth = this._call_func_inner("","","",funcname);
 			} else if (sarr.Length == 2) {
@@ -99,9 +122,40 @@ namespace CallAble
 			} else if (sarr.Length == 3) {
 				/*this is the namespace name and class name and function name*/
 				meth = this._call_func_inner("",sarr[0],sarr[1],sarr[2]);
-			} else if (sarr.Length > 3) {
-				/*this may be */
+			} else if (sarr.Length == 4) {
+				meth = this._call_func_inner(sarr[0],sarr[1],sarr[2],sarr[3]);
+				if (meth == null) {
+					namespc = String.Format("{0}.{1}", sarr[0],sarr[1]);
+					meth = this._call_func_inner("",namespc, sarr[2],sarr[3]);
+				}
+			} else {
+				namespc =  "";
+				for (i=1; i < (sarr.Length - 2) ;i ++) {
+					if (namespc.Length > 0) {
+						namespc += ".";
+					}
+					namespc += sarr[i];					
+				}
+
+				meth = this._call_func_inner(sarr[0], namespc, sarr[sarr.Length - 2], sarr[sarr.Length - 1]);
+				if (meth == null) {
+					i = 0;
+					namespc = "";
+					for (i = 0; i < (sarr.Length - 2) ;i ++) {
+						if (namespc.Length > 0) {
+							namespc += ".";
+						}
+						namespc += sarr[i];					
+					}
+					meth = this._call_func_inner("", namespc, sarr[sarr.Length - 2], sarr[sarr.Length - 1]);
+				}
 			}
+
+			if (meth == null) {
+				this.__throw_exception(String.Format("can not find [{0}] method", funcname));
+			}
+
+			return meth.Invoke(null,args);
 		}
 
 		private static string string_function(string fmtstr, params object[] args)
@@ -112,7 +166,9 @@ namespace CallAble
 		public static void Main(string[] args)
 		{
 			string s;
-			s = call_func("string_function", "cc {0}", "www");
+			CallAble clb;
+			clb = new CallAble();
+			s = (string)clb.call_func("string_function", "cc {0}", "www");
 			Console.Out.WriteLine(s);
 			return;
 		}
