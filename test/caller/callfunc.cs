@@ -31,10 +31,11 @@ namespace CallAble
 			foreach (var i in infos) {
 				Console.Out.WriteLine("{0}", i);
 			}
-			meth = tinfo.GetMethod(funcname, BindingFlags.Static);
+			meth = tinfo.GetMethod(funcname, BindingFlags.Static | BindingFlags.Public);
 			if (meth == null) {
 				return null;
 			}
+			Console.Out.WriteLine("find function {0}", funcname);
 			return meth;
 		}
 
@@ -154,13 +155,19 @@ namespace CallAble
 			if (meth == null) {
 				this.__throw_exception(String.Format("can not find [{0}] method", funcname));
 			}
-
+			Console.Out.WriteLine("will invoke function {0}", funcname);
+			for(i=0;i<args.Length;i++){
+				Console.Out.WriteLine("{0}={1}",i,args[i]);
+			}
 			return meth.Invoke(null,args);
 		}
 
-		private static string string_function(string fmtstr, params object[] args)
+		public static string string_function(string fmtstr, params object[] args)
+		//public static string string_function(string fmtstr)
 		{
+			Console.Out.WriteLine("call string_function all");
 			return String.Format(fmtstr,args);
+			//return fmtstr;
 		}
 
 		public static void Main(string[] args)
@@ -168,7 +175,8 @@ namespace CallAble
 			string s;
 			CallAble clb;
 			clb = new CallAble();
-			s = (string)clb.call_func("string_function", "cc {0}", "www");
+			//s = (string)clb.call_func("string_function", "cc {0}", "www");
+			s = CallAble.string_function("cc {0} {1}", "www","w322");
 			Console.Out.WriteLine(s);
 			return;
 		}
