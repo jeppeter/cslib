@@ -34,29 +34,29 @@ namespace CallAble
 			if (args.Length > paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
 				for (i=0;i < (paraminfos.Length - 1) ; i++) {
-					if (!args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
-						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					if (!(args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType))) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, paraminfos[i].ParameterType.Name, args[i].GetType().Name));
 					}
 					newargs[i] = args[i];
 				}
 
 				lastparam = paraminfos[(paraminfos.Length - 1)];
-				if (!lastparam.GetType().IsArray){
+				if (!lastparam.ParameterType.IsArray){
 					this.__throw_exception(String.Format("last param not array"));
 				}
 				lastargs = new object[(args.Length - paraminfos.Length - 1)];
 				newargs[(paraminfos.Length - 1)] = (object)lastargs;
 				for (i=(paraminfos.Length - 1),j=0;i<args.Length;i++,j ++) {
-					if (!args[i].GetType().IsSubclassOf(lastparam.GetType())) {
-						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, lastparam.GetType().Name));
+					if (!(args[i].GetType().IsSubclassOf(lastparam.ParameterType) || args[i].GetType().Equals(lastparam.ParameterType))) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, lastparam.ParameterType.Name,args[i].GetType().Name));
 					}
 					lastargs[j] = args[i];
 				}
 			} else if (args.Length < paraminfos.Length) {
 				newargs = args;
 				for (i=0; i < args.Length; i++) {
-					if (!args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
-						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					if (!(args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType))) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].ParameterType.Name));
 					}
 				}
 				for (i=args.Length;i < paraminfos.Length ;i ++) {
@@ -68,8 +68,8 @@ namespace CallAble
 				/*that is equal*/
 				newargs = args;
 				for (i=0;i< args.Length ;i ++) {
-					if (! args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
-						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					if (! (args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType) )) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, paraminfos[i].ParameterType.Name, args[i].GetType().Name));
 					}
 				}
 			}
