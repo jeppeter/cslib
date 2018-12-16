@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Collections.Generic;
 
 
 namespace CallAble
@@ -23,29 +24,84 @@ namespace CallAble
 		{
 			throw new ParseException(s);
 		}
+
+		private object[] _get_param_args(object[] args,ParameterInfo[] paraminfos)
+		{
+			object[] newargs;
+			object[] lastargs;
+			ParameterInfo lastparam;
+			int i,j;
+			if (args.Length > paraminfos.Length) {
+				newargs = new object[paraminfos.Length];
+				for (i=0;i < (paraminfos.Length - 1) ; i++) {
+					if (!args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					}
+					newargs[i] = args[i];
+				}
+
+				lastparam = paraminfos[(paraminfos.Length - 1)];
+				if (!lastparam.GetType().IsArray){
+					this.__throw_exception(String.Format("last param not array"));
+				}
+				lastargs = new object[(args.Length - paraminfos.Length - 1)];
+				newargs[(paraminfos.Length - 1)] = (object)lastargs;
+				for (i=(paraminfos.Length - 1),j=0;i<args.Length;i++,j ++) {
+					if (!args[i].GetType().IsSubclassOf(lastparam.GetType())) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, lastparam.GetType().Name));
+					}
+					lastargs[j] = args[i];
+				}
+			} else if (args.Length < paraminfos.Length) {
+				newargs = args;
+				for (i=0; i < args.Length; i++) {
+					if (!args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					}
+				}
+				for (i=args.Length;i < paraminfos.Length ;i ++) {
+					if (!paraminfos[i].HasDefaultValue){
+						this.__throw_exception(String.Format("[{0}] param not default", i));
+					}
+				}
+			} else {
+				/*that is equal*/
+				newargs = args;
+				for (i=0;i< args.Length ;i ++) {
+					if (! args[i].GetType().IsSubclassOf(paraminfos[i].GetType())) {
+						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].GetType().Name));
+					}
+				}
+			}
+			return newargs;
+		}
+
 		private MethodBase _check_funcname(Type tinfo,string funcname, params  object[] args)
 		{
-			MethodBase meth;
 			MethodInfo[] infos;
-			ParameterInfo[] paraminfos;		
+			ParameterInfo[] paraminfos;
+			List<MethodInfo> okmeths = new List<MethodInfo>();
 			infos = tinfo.GetMethods();
-			foreach (var i in infos) {
-				Console.Out.WriteLine("{0}", i);
+			foreach (var curmeth in infos) {
+				Console.Out.WriteLine("[{0}]",curmeth.Name);
+				if (curmeth.Name == funcname) {
+					Console.Out.WriteLine("match [{0}]", funcname);
+					paraminfos= curmeth.GetParameters();
+					try {
+						this._get_param_args(args,paraminfos);
+						okmeths.Add(curmeth);
+					}
+					catch(ParseException e) {
+						Console.Error.WriteLine("catch error [{0}]", e);
+					}
+				}
 			}
-			meth = tinfo.GetMethod(funcname, BindingFlags.Static | BindingFlags.Public);
-			if (meth == null) {
+
+			if (okmeths.Count == 0) {
 				return null;
 			}
-			Console.Out.WriteLine("find function {0}", funcname);
-			paraminfos = meth.GetParameters();
-			foreach(var i in paraminfos) {
-				Console.Out.WriteLine("param[{0}]",i);
-			}
-			foreach (var i in args) 
-			{
-				Console.Out.WriteLine("args[{0}]", i.GetType());
-			}
-			return meth;
+			return okmeths[0];
+
 		}
 
 		private MethodBase _call_func_inner(string dllname, string nspc, string clsname,string fname, params object[] args)
@@ -119,6 +175,8 @@ namespace CallAble
 			string namespc = "";
 			MethodBase meth = null;
 			int i;
+			object[] newargs;
+			ParameterInfo[] paraminfos;
 			if (funcname.Length == 0) {
 				this.__throw_exception(String.Format("null funcname can not accept"));
 			}
@@ -164,11 +222,9 @@ namespace CallAble
 			if (meth == null) {
 				this.__throw_exception(String.Format("can not find [{0}] method", funcname));
 			}
-			Console.Out.WriteLine("will invoke function {0}", funcname);
-			for(i=0;i<args.Length;i++){
-				Console.Out.WriteLine("{0}={1}",i,args[i]);
-			}
-			return meth.Invoke(null,args);
+			paraminfos = meth.GetParameters();
+			newargs = this._get_param_args(args,paraminfos);
+			return meth.Invoke(null,newargs);
 		}
 
 		public static string string_function(string fmtstr, params object[] args)
