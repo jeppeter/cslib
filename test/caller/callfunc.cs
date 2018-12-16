@@ -27,6 +27,7 @@ namespace CallAble
 		{
 			MethodBase meth;
 			MethodInfo[] infos;
+			ParameterInfo[] paraminfos;		
 			infos = tinfo.GetMethods();
 			foreach (var i in infos) {
 				Console.Out.WriteLine("{0}", i);
@@ -36,6 +37,14 @@ namespace CallAble
 				return null;
 			}
 			Console.Out.WriteLine("find function {0}", funcname);
+			paraminfos = meth.GetParameters();
+			foreach(var i in paraminfos) {
+				Console.Out.WriteLine("param[{0}]",i);
+			}
+			foreach (var i in args) 
+			{
+				Console.Out.WriteLine("args[{0}]", i.GetType());
+			}
 			return meth;
 		}
 
@@ -116,18 +125,18 @@ namespace CallAble
 
 			sarr = funcname.Split('.');
 			if (sarr.Length == 1) {
-				meth = this._call_func_inner("","","",funcname);
+				meth = this._call_func_inner("","","",funcname,args);
 			} else if (sarr.Length == 2) {
 				/*this is the class name and function name*/
-				meth = this._call_func_inner("","",sarr[0],sarr[1]);
+				meth = this._call_func_inner("","",sarr[0],sarr[1],args);
 			} else if (sarr.Length == 3) {
 				/*this is the namespace name and class name and function name*/
-				meth = this._call_func_inner("",sarr[0],sarr[1],sarr[2]);
+				meth = this._call_func_inner("",sarr[0],sarr[1],sarr[2],args);
 			} else if (sarr.Length == 4) {
-				meth = this._call_func_inner(sarr[0],sarr[1],sarr[2],sarr[3]);
+				meth = this._call_func_inner(sarr[0],sarr[1],sarr[2],sarr[3],args);
 				if (meth == null) {
 					namespc = String.Format("{0}.{1}", sarr[0],sarr[1]);
-					meth = this._call_func_inner("",namespc, sarr[2],sarr[3]);
+					meth = this._call_func_inner("",namespc, sarr[2],sarr[3],args);
 				}
 			} else {
 				namespc =  "";
@@ -175,8 +184,8 @@ namespace CallAble
 			string s;
 			CallAble clb;
 			clb = new CallAble();
-			//s = (string)clb.call_func("string_function", "cc {0}", "www");
-			s = CallAble.string_function("cc {0} {1}", "www","w322");
+			s = (string)clb.call_func("string_function", "cc {0}", "www");
+			//s = CallAble.string_function("cc {0} {1}", "www","w322");
 			Console.Out.WriteLine(s);
 			return;
 		}
