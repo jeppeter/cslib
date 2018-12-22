@@ -13,6 +13,14 @@ namespace CallAble
 		}
 	}
 
+	public class CC
+	{
+		public static string format_string(string fmtstr, params object[] args)
+		{
+			return String.Format(fmtstr,args);
+		}
+	}
+
 	public class CallAble
 	{
 		public CallAble()
@@ -57,7 +65,7 @@ namespace CallAble
 				}
 			} else if (args.Length < paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
-				Console.Out.WriteLine("args[{0}] < paraminfos[{1}]", args.Length, paraminfos.Length);
+				//Console.Out.WriteLine("args[{0}] < paraminfos[{1}]", args.Length, paraminfos.Length);
 				for (i=0; i < args.Length; i++) {
 					if (!(args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType))) {
 						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].ParameterType.Name));
@@ -123,7 +131,7 @@ namespace CallAble
 
 		private MethodBase _call_func_inner(string dllname, string nspc, string clsname,string fname, params object[] args)
 		{
-			int i;
+			int i,j;
 			StackFrame frm;
 			StackTrace stk;
 			MethodBase curbase;
@@ -132,6 +140,7 @@ namespace CallAble
 			string bindname;
 			Assembly asbl;
 			string dl;
+			string[] sarr;
 			if (dllname.Length <= 0 && 
 				nspc.Length <= 0 && 
 				clsname.Length <= 0) {
@@ -149,9 +158,23 @@ namespace CallAble
 				}
 			} else if (dllname.Length <= 0 && 
 				nspc.Length <= 0) {
+				stk = new StackTrace();
+				for (i=0;i<stk.FrameCount;i++) {
+					frm = stk.GetFrame(i);
+					curbase = frm.GetMethod();
+					curtype = curbase.DeclaringType;
+					sarr = String.Split(".",curtype.FullName);
+					if (sarr.Length > 1) {
+						nspc = 
+						} else {
+
+						}
+				}
 				/*now to get */
 				curtype = Type.GetType(clsname);
+				Console.Out.WriteLine("curtype [{0}]", curtype);
 				if (curtype == null) {
+					Console.Out.WriteLine("null type[{0}]", clsname);
 					return null;
 				}
 				meth = this._check_funcname(curtype, fname, args);
@@ -259,7 +282,8 @@ namespace CallAble
 			CallAble clb;
 			clb = new CallAble();
 			//s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
-			s = (string)clb.call_func("string_function", "cc {0}", "www");
+			//s = (string)clb.call_func("string_function", "cc {0}", "www");
+			s = (string)clb.call_func("CallAble.CC.format_string", "cc {0}", "www");
 			//Console.Out.WriteLine(s);
 			//s = (string)clb.call_func("string_default_function", "bbs");
 			//s = CallAble.string_default_function("bbs");
