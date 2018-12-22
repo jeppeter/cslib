@@ -30,7 +30,9 @@ namespace CallAble
 			object[] newargs;
 			object[] lastargs;
 			ParameterInfo lastparam;
+			Type lasttype;
 			int i,j;
+			bool bsucc;
 			if (args.Length > paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
 				for (i=0;i < (paraminfos.Length - 1) ; i++) {
@@ -44,32 +46,49 @@ namespace CallAble
 				if (!lastparam.ParameterType.IsArray){
 					this.__throw_exception(String.Format("last param not array"));
 				}
-				lastargs = new object[(args.Length - paraminfos.Length - 1)];
+				lasttype = lastparam.ParameterType.GetElementType();
+				lastargs = new object[(args.Length - paraminfos.Length+1)];
 				newargs[(paraminfos.Length - 1)] = (object)lastargs;
 				for (i=(paraminfos.Length - 1),j=0;i<args.Length;i++,j ++) {
-					if (!(args[i].GetType().IsSubclassOf(lastparam.ParameterType) || args[i].GetType().Equals(lastparam.ParameterType))) {
+					if (!(args[i].GetType().IsSubclassOf(lasttype) || args[i].GetType().Equals(lasttype))) {
 						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, lastparam.ParameterType.Name,args[i].GetType().Name));
 					}
-					lastargs[j] = args[i];
+					lastargs[j] = (object)args[i];
 				}
 			} else if (args.Length < paraminfos.Length) {
-				newargs = args;
+				newargs = new object[paraminfos.Length];
+				Console.Out.WriteLine("args[{0}] < paraminfos[{1}]", args.Length, paraminfos.Length);
 				for (i=0; i < args.Length; i++) {
 					if (!(args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType))) {
 						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].ParameterType.Name));
 					}
+					newargs[i] = args[i];
 				}
 				for (i=args.Length;i < paraminfos.Length ;i ++) {
 					if (!paraminfos[i].HasDefaultValue){
 						this.__throw_exception(String.Format("[{0}] param not default", i));
 					}
+					newargs[i] = paraminfos[i].DefaultValue;
 				}
 			} else {
 				/*that is equal*/
 				newargs = args;
 				for (i=0;i< args.Length ;i ++) {
 					if (! (args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType) )) {
-						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, paraminfos[i].ParameterType.Name, args[i].GetType().Name));
+						bsucc = false;
+						if (i == (args.Length - 1) && paraminfos[i].ParameterType.IsArray) {
+							if (args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType.GetElementType()) || 
+								args[i].GetType().Equals(paraminfos[i].ParameterType.GetElementType())) {
+								bsucc = true;
+								lastargs = new object[1];
+								lastargs[0] = args[i];
+								newargs[i] = lastargs;
+							}
+						}
+						if (! bsucc) {
+							this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, paraminfos[i].ParameterType.Name, args[i].GetType().Name));	
+						}
+						
 					}
 				}
 			}
@@ -83,9 +102,7 @@ namespace CallAble
 			List<MethodInfo> okmeths = new List<MethodInfo>();
 			infos = tinfo.GetMethods();
 			foreach (var curmeth in infos) {
-				Console.Out.WriteLine("[{0}]",curmeth.Name);
 				if (curmeth.Name == funcname) {
-					Console.Out.WriteLine("match [{0}]", funcname);
 					paraminfos= curmeth.GetParameters();
 					try {
 						this._get_param_args(args,paraminfos);
@@ -124,9 +141,7 @@ namespace CallAble
 					frm = stk.GetFrame(i);
 					curbase = frm.GetMethod();
 					curtype = curbase.DeclaringType;
-					Console.Out.WriteLine("curbase [{0}] curtype [{1}] ", curbase, curtype);
 					curtype = Type.GetType(curtype.FullName);
-					Console.Out.WriteLine("curtype [{0}]", curtype);
 					meth = this._check_funcname(curtype,fname, args);
 					if (meth != null) {
 						return meth;
@@ -228,11 +243,14 @@ namespace CallAble
 		}
 
 		public static string string_function(string fmtstr, params object[] args)
-		//public static string string_function(string fmtstr)
 		{
 			Console.Out.WriteLine("call string_function all");
 			return String.Format(fmtstr,args);
-			//return fmtstr;
+		}
+
+		public static string string_default_function(string fmtstr,string defname = "cc")
+		{
+			return fmtstr + " name " + defname;
 		}
 
 		public static void Main(string[] args)
@@ -240,8 +258,11 @@ namespace CallAble
 			string s;
 			CallAble clb;
 			clb = new CallAble();
+			//s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
 			s = (string)clb.call_func("string_function", "cc {0}", "www");
-			//s = CallAble.string_function("cc {0} {1}", "www","w322");
+			//Console.Out.WriteLine(s);
+			//s = (string)clb.call_func("string_default_function", "bbs");
+			//s = CallAble.string_default_function("bbs");
 			Console.Out.WriteLine(s);
 			return;
 		}
