@@ -65,7 +65,6 @@ namespace CallAble
 				}
 			} else if (args.Length < paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
-				//Console.Out.WriteLine("args[{0}] < paraminfos[{1}]", args.Length, paraminfos.Length);
 				for (i=0; i < args.Length; i++) {
 					if (!(args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType) || args[i].GetType().Equals(paraminfos[i].ParameterType))) {
 						this.__throw_exception(String.Format("[{0}] not subclass of [{1}]", i, paraminfos[i].ParameterType.Name));
@@ -171,7 +170,6 @@ namespace CallAble
 			} else if (dllname.Length <= 0 && 
 				nspc.Length <= 0) {
 				stk = new StackTrace();
-				Console.Out.WriteLine("stk.FrameCount {0}", stk.FrameCount);
 				for (i=0;i < stk.FrameCount;i++) {
 					frm = stk.GetFrame(i);
 					curbase = frm.GetMethod();
@@ -185,9 +183,7 @@ namespace CallAble
 						nspc += sarr[j];
 					}
 					curtype = Type.GetType(String.Format("{0}.{1}", nspc,clsname));
-					Console.Out.WriteLine("curtype [{0}]", curtype);
 					if (curtype == null) {
-						Console.Out.WriteLine("null type[{0}]", clsname);
 						continue;
 					}
 					meth = this._check_funcname(curtype, fname, args);
@@ -238,7 +234,6 @@ namespace CallAble
 				meth = this._call_func_inner("","","",funcname,args);
 			} else if (sarr.Length == 2) {
 				/*this is the class name and function name*/
-				Console.Out.WriteLine("sarr {0} {1}", sarr[0],sarr[1]);
 				meth = this._call_func_inner("","",sarr[0],sarr[1],args);
 			} else if (sarr.Length == 3) {
 				/*this is the namespace name and class name and function name*/
