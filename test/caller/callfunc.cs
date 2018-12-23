@@ -73,10 +73,22 @@ namespace CallAble
 					newargs[i] = args[i];
 				}
 				for (i=args.Length;i < paraminfos.Length ;i ++) {
+					bsucc = false;
 					if (!paraminfos[i].HasDefaultValue){
+						if (i==(paraminfos.Length - 1)) {
+							if (paraminfos[i].ParameterType.IsArray) {
+								bsucc = true;
+								newargs[i] = new object[0];
+							}
+						}
+					} else {
+						bsucc = true;
+						newargs[i] = paraminfos[i].DefaultValue;
+					}
+					if (!bsucc) {
 						this.__throw_exception(String.Format("[{0}] param not default", i));
 					}
-					newargs[i] = paraminfos[i].DefaultValue;
+					
 				}
 			} else {
 				/*that is equal*/
@@ -159,27 +171,29 @@ namespace CallAble
 			} else if (dllname.Length <= 0 && 
 				nspc.Length <= 0) {
 				stk = new StackTrace();
-				for (i=0;i<stk.FrameCount;i++) {
+				Console.Out.WriteLine("stk.FrameCount {0}", stk.FrameCount);
+				for (i=0;i < stk.FrameCount;i++) {
 					frm = stk.GetFrame(i);
 					curbase = frm.GetMethod();
 					curtype = curbase.DeclaringType;
-					sarr = String.Split(".",curtype.FullName);
-					if (sarr.Length > 1) {
-						nspc = 
-						} else {
-
+					sarr = curtype.FullName.Split('.');
+					nspc = "";
+					for (j=0;j < (sarr.Length - 1); j++) {
+						if (nspc.Length > 0) {
+							nspc += ".";
 						}
-				}
-				/*now to get */
-				curtype = Type.GetType(clsname);
-				Console.Out.WriteLine("curtype [{0}]", curtype);
-				if (curtype == null) {
-					Console.Out.WriteLine("null type[{0}]", clsname);
-					return null;
-				}
-				meth = this._check_funcname(curtype, fname, args);
-				if (meth != null) {
-					return meth;
+						nspc += sarr[j];
+					}
+					curtype = Type.GetType(String.Format("{0}.{1}", nspc,clsname));
+					Console.Out.WriteLine("curtype [{0}]", curtype);
+					if (curtype == null) {
+						Console.Out.WriteLine("null type[{0}]", clsname);
+						continue;
+					}
+					meth = this._check_funcname(curtype, fname, args);
+					if (meth != null) {
+						return meth;
+					}
 				}
 			} else if (dllname.Length <= 0) {
 				bindname = String.Format("{0}.{1}", nspc, clsname);
@@ -224,6 +238,7 @@ namespace CallAble
 				meth = this._call_func_inner("","","",funcname,args);
 			} else if (sarr.Length == 2) {
 				/*this is the class name and function name*/
+				Console.Out.WriteLine("sarr {0} {1}", sarr[0],sarr[1]);
 				meth = this._call_func_inner("","",sarr[0],sarr[1],args);
 			} else if (sarr.Length == 3) {
 				/*this is the namespace name and class name and function name*/
@@ -282,8 +297,12 @@ namespace CallAble
 			CallAble clb;
 			clb = new CallAble();
 			//s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
+			//s = (string)clb.call_func("string_function", "cc WW");
 			//s = (string)clb.call_func("string_function", "cc {0}", "www");
-			s = (string)clb.call_func("CallAble.CC.format_string", "cc {0}", "www");
+			//s = (string)clb.call_func("CC.format_string", "cc {0}", "www");
+			//s = (string)clb.call_func("CC.format_string", "cc {0}", "www");
+			//s = (string) clb.call_func("Call2.Call2.cc_call","cc {0}", "cca2");
+			s = (string) clb.call_func("calldll.CallDll.CallDll.cc_call","cc {0}", "cca2");
 			//Console.Out.WriteLine(s);
 			//s = (string)clb.call_func("string_default_function", "bbs");
 			//s = CallAble.string_default_function("bbs");
