@@ -10,13 +10,13 @@ namespace Constr
 	{
 		private int m_n;
 		private string m_s;
-		public CC(int n)
+		public CC(int n=52)
 		{
 			this.m_s = "";
 			this.m_n = n;
 		}
 
-		public CC(string m)
+		public CC(string m="e2")
 		{
 			this.m_s = m;
 			this.m_n = 0;
@@ -48,11 +48,15 @@ namespace Constr
 		{
 			Type ct = Type.GetType("Constr.CC");
 			string s;
-			int idx;
+			int idx,jdx,i;
+			ConstructorInfo finfo = null;
+			CC c;
+			object [] paramcc;
 	     	foreach (ConstructorInfo item in ct.GetConstructors())
 	        {	
 	        	s = String.Format("name [{0}](", item.Name);
 	        	idx = 0;
+	        	jdx = 0;
 	            foreach(ParameterInfo pinfo in item.GetParameters()) 
 	            {
 	            	if (idx >0 ) {
@@ -65,11 +69,26 @@ namespace Constr
 	            	if (pinfo.HasDefaultValue) {
 	            		s += " = ";
 	            		s += pinfo.DefaultValue.ToString();
+	            	} else {
+	            		jdx ++;
 	            	}
 	            	idx ++;
 	            }
 	            s += ")";
 	            Console.Out.WriteLine(s);
+
+	            if (jdx == 0) {
+	            	finfo = item;
+	            	paramcc = new object[idx];
+	            	i = 0;
+	            	foreach(ParameterInfo pinfo in item.GetParameters()) 
+	            	{
+	            		paramcc[i] = (object)pinfo.DefaultValue;
+	            		i ++;
+	            	}
+	            	c = (CC) finfo.Invoke(paramcc);
+	            	Console.Out.WriteLine("{0}",c.Get());
+	            }
 	        }
 	        return ;
 		}
