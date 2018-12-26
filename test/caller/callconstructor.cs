@@ -30,6 +30,12 @@ namespace Constr
 			this.m_n = 0;
 		}
 
+		public CC(string cc="ss",int n=30)
+		{
+			this.m_s = cc;
+			this.m_n = n;
+		}
+
 		public string Get()
 		{
 			return String.Format("s [{0}] n [{1}]", this.m_s,this.m_n);
@@ -55,7 +61,11 @@ namespace Constr
 	            	s += pinfo.ParameterType.FullName;
 	            	s += " ";
 	            	s += pinfo.Name;
-	            	//s += pinfo.ToString();
+
+	            	if (pinfo.HasDefaultValue) {
+	            		s += " = ";
+	            		s += pinfo.DefaultValue.ToString();
+	            	}
 	            	idx ++;
 	            }
 	            s += ")";
