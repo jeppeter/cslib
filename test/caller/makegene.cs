@@ -65,6 +65,8 @@ namespace Constr
 		{
 			if (o is T) {
 				this.m_list.Add((T)o);
+			} else {
+				throw new Exception(String.Format("not type of  [{0}]", typeof(T).FullName));
 			}
 		}
 
@@ -102,6 +104,7 @@ namespace Constr
 				Console.Out.WriteLine("[{0}]=[{1}]",i,cclist[i].Get());
 			}
 			
+			arrlist.Add(32);
 			return;
 		}
 	}
