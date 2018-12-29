@@ -83,28 +83,47 @@ namespace Constr
 
 	public class Constr
 	{
-		public static void Main(string[] args)
+		public Constr()
 		{
-			Type t = Type.GetType("Constr.CC");
+
+		}
+
+		public void AddObject(_NC arrlist,params object[] oarr)
+		{
+			int i;
+			if (oarr.Length > 0) {
+				for (i=0;i < oarr.Length;i++) {
+					arrlist.Add(oarr[i]);
+				}
+			}
+			return;
+		}
+
+		public _NC MakeArrays(string typename)
+		{
+			Type t = Type.GetType(typename);
 			Type[] typeargs = {t};
 			Type tlist = typeof(_NList<>);
 			Type me = tlist.MakeGenericType(typeargs);
 			_NC arrlist = Activator.CreateInstance(me) as _NC;
-			CC[] cclist;
-			int i;
 			if (arrlist == null) {
-				Console.Out.WriteLine("null");
-			} else {
-				Console.Out.WriteLine("arr count {0}", arrlist.Count());		
+				throw new Exception(String.Format("can not create generic for [{0}]", typename));
 			}
-			arrlist.Add(new CC(32));
-			arrlist.Add(new CC("str"));
-			cclist = arrlist.ToArray() as CC[];
-			for (i=0;i<cclist.Length;i++) {
-				Console.Out.WriteLine("[{0}]=[{1}]",i,cclist[i].Get());
+			return arrlist;
+		}
+
+		public static void Main(string[] args)
+		{
+			Constr c = new Constr();
+			_NC arrlist = c.MakeArrays("Constr.CC");
+			int i;
+			CC[] cclist;
+			arrlist.Add(new CC(53));
+			arrlist.Add(new CC("w2"));
+			cclist = (CC[]) arrlist.ToArray();
+			for (i=0; i < cclist.Length ;i ++) {
+				Console.Out.WriteLine("[{0}]=[{1}]", i, cclist[i].Get());
 			}
-			
-			arrlist.Add(32);
 			return;
 		}
 	}
