@@ -118,9 +118,11 @@ namespace Constr
 			_NC arrlist = c.MakeArrays("Constr.CC");
 			int i;
 			CC[] cclist;
+			object[] objlist;
 			arrlist.Add(new CC(53));
 			arrlist.Add(new CC("w2"));
-			cclist = (CC[]) arrlist.ToArray();
+			objlist =  arrlist.ToArray();
+			cclist = (CC[])Convert.ChangeType(objlist,Type.GetType("Constr.CC[]"));
 			for (i=0; i < cclist.Length ;i ++) {
 				Console.Out.WriteLine("[{0}]=[{1}]", i, cclist[i].Get());
 			}

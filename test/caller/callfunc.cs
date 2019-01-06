@@ -194,7 +194,7 @@ namespace CallAble
 							if (paraminfos[i].ParameterType.IsArray) {
 								bsucc = true;
 								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
-								newargs[i] = (object) cc.ToArray();
+								newargs[i] = (object) Convert.ChangeType(cc.ToArray(),paraminfos[i].ParameterType);
 							}
 						}
 					} else {
@@ -218,7 +218,7 @@ namespace CallAble
 								bsucc = true;
 								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
 								this.__add_object(cc,args[i]);
-								newargs[i] = (object) cc.ToArray();
+								newargs[i] = (object) Convert.ChangeType(cc.ToArray(),paraminfos[i].ParameterType);
 							}
 						}
 						if (! bsucc) {
@@ -390,7 +390,14 @@ namespace CallAble
 			paraminfos = meth.GetParameters();
 			newargs = this._get_param_args(args,paraminfos);
 			for (i=0; i < newargs.Length ;i ++) {
+
 				Console.Out.WriteLine("[{0}] type [{1}]", i, newargs[i].GetType().FullName);
+				if (newargs[i].GetType().IsArray) {
+					object[] c = (object[]) newargs[i];
+					for (j=0; j < c.Length; j++) {
+						Console.Out.WriteLine("    [{0}] type [{1}]", j, c[j].GetType().FullName);
+					}
+				}
 			}
 			return meth.Invoke(null,newargs);
 		}
@@ -413,7 +420,7 @@ namespace CallAble
 			clb = new CallAble();
 			s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
 			Console.Out.WriteLine(s);
-			s = (string)clb.call_func("StaticClass.get_ccn", "sswww", new CCN("www"), new CCN("ww222"));
+			s = (string)clb.call_func("StaticClass.get_ccn", "sswww", new CCN("www"), new CCAN("ww222"));
 			//s = StaticClass.get_ccn("sswww", new CCN("www"), new CCAN("ww222"));
 			Console.Out.WriteLine(s);
 			//s = (string)clb.call_func("string_function", "cc WW");
