@@ -13,6 +13,57 @@ namespace CallAble
 		}
 	}
 
+	public class CCN
+	{
+		private string m_s;
+		public CCN()
+		{
+			this.m_s = "";
+		}
+
+		public CCN(string c)
+		{
+			this.m_s = c;
+		}
+
+		public string Get()
+		{
+			return this.m_s;
+		}
+	}
+
+	public class CCAN : CCN
+	{
+		public CCAN() : base()
+		{
+
+		}
+
+		public CCAN(string c) : base(c)
+		{
+
+		}
+	}
+
+	public class StaticClass
+	{
+		public static string get_ccn(string fmtstr,params CCN[] args)
+		{
+			string s;
+			CCN c;
+			int i;
+			s = "";
+			s += fmtstr;
+			for(i=0;i< args.Length; i++) {
+				c = args[i];
+				s += " [";
+				s += c.Get();
+				s += "]";
+			}		
+			return s;
+		}
+	}
+
 	public class CC
 	{
 		public static string format_string(string fmtstr, params object[] args)
@@ -23,10 +74,74 @@ namespace CallAble
 
 	public class CallAble
 	{
+
+
+		private interface _NC
+		{
+			int Count();
+			void Add(object o);
+			void Clear();
+			object[] ToArray();
+		}
+
+		private class _NList<T> : _NC
+		{
+			private List<T> m_list = new List<T>();
+
+			int _NC.Count()
+			{
+				return this.m_list.Count;
+			}
+
+			void _NC.Add(object o)
+			{
+				if (o is T) {
+					this.m_list.Add((T)o);
+				} else {
+					throw new ParseException(String.Format("not type of  [{0}]", typeof(T).FullName));
+				}
+			}
+
+			void _NC.Clear()
+			{
+				this.m_list.Clear();
+			}
+
+			object[] _NC.ToArray()
+			{
+				return this.m_list.ToArray() as object[];
+			}
+		}
+
 		public CallAble()
 		{
 
 		}
+
+		private void __add_object(_NC arrlist,params object[] oarr)
+		{
+			int i;
+			if (oarr.Length > 0) {
+				for (i=0;i < oarr.Length;i++) {
+					arrlist.Add(oarr[i]);
+				}
+			}
+			return;
+		}
+
+		private _NC __make_arrays(string typename)
+		{
+			Type t = Type.GetType(typename);
+			Type[] typeargs = {t};
+			Type tlist = typeof(_NList<>);
+			Type me = tlist.MakeGenericType(typeargs);
+			_NC arrlist = Activator.CreateInstance(me) as _NC;
+			if (arrlist == null) {
+				throw new ParseException(String.Format("can not create generic for [{0}]", typename));
+			}
+			return arrlist;
+		}
+
 
 		private void __throw_exception(string s)
 		{
@@ -41,6 +156,7 @@ namespace CallAble
 			Type lasttype;
 			int i,j;
 			bool bsucc;
+			_NC cc;
 			if (args.Length > paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
 				for (i=0;i < (paraminfos.Length - 1) ; i++) {
@@ -77,7 +193,8 @@ namespace CallAble
 						if (i==(paraminfos.Length - 1)) {
 							if (paraminfos[i].ParameterType.IsArray) {
 								bsucc = true;
-								newargs[i] = new object[0];
+								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
+								newargs[i] = (object) cc.ToArray();
 							}
 						}
 					} else {
@@ -99,9 +216,9 @@ namespace CallAble
 							if (args[i].GetType().IsSubclassOf(paraminfos[i].ParameterType.GetElementType()) || 
 								args[i].GetType().Equals(paraminfos[i].ParameterType.GetElementType())) {
 								bsucc = true;
-								lastargs = new object[1];
-								lastargs[0] = args[i];
-								newargs[i] = lastargs;
+								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
+								this.__add_object(cc,args[i]);
+								newargs[i] = (object) cc.ToArray();
 							}
 						}
 						if (! bsucc) {
@@ -222,7 +339,7 @@ namespace CallAble
 			string[] sarr;
 			string namespc = "";
 			MethodBase meth = null;
-			int i;
+			int i,j;
 			object[] newargs;
 			ParameterInfo[] paraminfos;
 			if (funcname.Length == 0) {
@@ -272,6 +389,9 @@ namespace CallAble
 			}
 			paraminfos = meth.GetParameters();
 			newargs = this._get_param_args(args,paraminfos);
+			for (i=0; i < newargs.Length ;i ++) {
+				Console.Out.WriteLine("[{0}] type [{1}]", i, newargs[i].GetType().FullName);
+			}
 			return meth.Invoke(null,newargs);
 		}
 
@@ -291,15 +411,19 @@ namespace CallAble
 			string s;
 			CallAble clb;
 			clb = new CallAble();
-			//s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
+			s = (string)clb.call_func("string_function", "cc {0} {1}", "www", "w322");
+			Console.Out.WriteLine(s);
+			s = (string)clb.call_func("StaticClass.get_ccn", "sswww", new CCN("www"), new CCN("ww222"));
+			//s = StaticClass.get_ccn("sswww", new CCN("www"), new CCAN("ww222"));
+			Console.Out.WriteLine(s);
 			//s = (string)clb.call_func("string_function", "cc WW");
 			//s = (string)clb.call_func("string_function", "cc {0}", "www");
 			//s = (string)clb.call_func("CC.format_string", "cc {0}", "www");
 			//s = (string)clb.call_func("CC.format_string", "cc {0}", "www");
 			//s = (string) clb.call_func("Call2.Call2.cc_call","cc {0}", "cca2");
-			s = (string) clb.call_func("calldll.CallDll.CallDll.cc_call","cc {0}", "cca2");
+			//s = (string) clb.call_func("calldll.CallDll.CallDll.cc_call","cc {0}", "cca2");
 			//Console.Out.WriteLine(s);
-			//s = (string)clb.call_func("string_default_function", "bbs");
+			s = (string)clb.call_func("string_default_function", "bbs");
 			//s = CallAble.string_default_function("bbs");
 			Console.Out.WriteLine(s);
 			return;
