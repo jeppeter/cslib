@@ -49,7 +49,6 @@ namespace Constr
 		int Count();
 		void Add(object o);
 		void Clear();
-		object[] ToArray();
 	}
 
 	public class _NList<T> : _NC
@@ -75,9 +74,9 @@ namespace Constr
 			this.m_list.Clear();
 		}
 
-		object[] _NC.ToArray()
+		T[] ToArray()
 		{
-			return this.m_list.ToArray() as object[];
+			return this.m_list.ToArray();
 		}
 	}
 
@@ -116,13 +115,27 @@ namespace Constr
 		{
 			Constr c = new Constr();
 			_NC arrlist = c.MakeArrays("Constr.CC");
+			List<int> mi = new List<int>();
 			int i;
 			CC[] cclist;
 			object[] objlist;
+			MethodInfo minfo;
+
 			arrlist.Add(new CC(53));
 			arrlist.Add(new CC("w2"));
-			objlist =  arrlist.ToArray();
-			cclist = (CC[])Convert.ChangeType(objlist,Type.GetType("Constr.CC[]"));
+			minfo = arrlist.GetType().GetMethod("ToArray",BindingFlags.NonPublic | BindingFlags.Instance);
+			if (minfo == null) {
+				foreach(var m in arrlist.GetType().GetMethods()) {
+					Console.Out.WriteLine("name [{0}]", m);
+				}
+
+				foreach(var m in arrlist.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)) {
+					Console.Out.WriteLine("==name [{0}]", m);	
+				}
+				Console.Out.WriteLine("can not get ToArray [{0}]", arrlist.GetType().Name);
+				return;
+			}
+			cclist = (CC[]) minfo.Invoke(arrlist, new object[0]);
 			for (i=0; i < cclist.Length ;i ++) {
 				Console.Out.WriteLine("[{0}]=[{1}]", i, cclist[i].Get());
 			}

@@ -81,7 +81,6 @@ namespace CallAble
 			int Count();
 			void Add(object o);
 			void Clear();
-			object[] ToArray();
 		}
 
 		private class _NList<T> : _NC
@@ -107,9 +106,9 @@ namespace CallAble
 				this.m_list.Clear();
 			}
 
-			object[] _NC.ToArray()
+			T[] ToArray()
 			{
-				return this.m_list.ToArray() as object[];
+				return this.m_list.ToArray();
 			}
 		}
 
@@ -142,6 +141,16 @@ namespace CallAble
 			return arrlist;
 		}
 
+		private object __get_arrays(_NC arrlist)
+		{
+			MethodInfo minfo;
+			minfo = arrlist.GetType().GetMethod("ToArray", BindingFlags.NonPublic | BindingFlags.Instance);
+			if (minfo == null) {
+				throw new ParseException(String.Format("no ToArray"));
+			}
+			return (object) minfo.Invoke(arrlist,new object[0]);
+		}
+
 
 		private void __throw_exception(string s)
 		{
@@ -156,7 +165,7 @@ namespace CallAble
 			Type lasttype;
 			int i,j;
 			bool bsucc;
-			_NC cc;
+			_NC cc = null;
 			if (args.Length > paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
 				for (i=0;i < (paraminfos.Length - 1) ; i++) {
@@ -172,13 +181,14 @@ namespace CallAble
 				}
 				lasttype = lastparam.ParameterType.GetElementType();
 				lastargs = new object[(args.Length - paraminfos.Length+1)];
-				newargs[(paraminfos.Length - 1)] = (object)lastargs;
+				cc = this.__make_arrays(lastparam.ParameterType.GetElementType().FullName);
 				for (i=(paraminfos.Length - 1),j=0;i<args.Length;i++,j ++) {
 					if (!(args[i].GetType().IsSubclassOf(lasttype) || args[i].GetType().Equals(lasttype))) {
 						this.__throw_exception(String.Format("[{0}] not subclass of [{1}] [{2}]", i, lastparam.ParameterType.Name,args[i].GetType().Name));
 					}
-					lastargs[j] = (object)args[i];
+					this.__add_object(cc,args[i]);
 				}
+				newargs[(paraminfos.Length - 1)] = this.__get_arrays(cc);
 			} else if (args.Length < paraminfos.Length) {
 				newargs = new object[paraminfos.Length];
 				for (i=0; i < args.Length; i++) {
@@ -194,7 +204,7 @@ namespace CallAble
 							if (paraminfos[i].ParameterType.IsArray) {
 								bsucc = true;
 								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
-								newargs[i] = (object) Convert.ChangeType(cc.ToArray(),paraminfos[i].ParameterType);
+								newargs[i] = this.__get_arrays(cc);
 							}
 						}
 					} else {
@@ -218,7 +228,7 @@ namespace CallAble
 								bsucc = true;
 								cc = this.__make_arrays(paraminfos[i].ParameterType.GetElementType().FullName);
 								this.__add_object(cc,args[i]);
-								newargs[i] = (object) Convert.ChangeType(cc.ToArray(),paraminfos[i].ParameterType);
+								newargs[i] = this.__get_arrays(cc);
 							}
 						}
 						if (! bsucc) {
@@ -339,7 +349,7 @@ namespace CallAble
 			string[] sarr;
 			string namespc = "";
 			MethodBase meth = null;
-			int i,j;
+			int i;
 			object[] newargs;
 			ParameterInfo[] paraminfos;
 			if (funcname.Length == 0) {
@@ -389,16 +399,6 @@ namespace CallAble
 			}
 			paraminfos = meth.GetParameters();
 			newargs = this._get_param_args(args,paraminfos);
-			for (i=0; i < newargs.Length ;i ++) {
-
-				Console.Out.WriteLine("[{0}] type [{1}]", i, newargs[i].GetType().FullName);
-				if (newargs[i].GetType().IsArray) {
-					object[] c = (object[]) newargs[i];
-					for (j=0; j < c.Length; j++) {
-						Console.Out.WriteLine("    [{0}] type [{1}]", j, c[j].GetType().FullName);
-					}
-				}
-			}
 			return meth.Invoke(null,newargs);
 		}
 
