@@ -74,8 +74,6 @@ namespace CallAble
 
 	public class CallAble
 	{
-
-
 		private interface _NC
 		{
 			int Count();
@@ -110,11 +108,6 @@ namespace CallAble
 			{
 				return this.m_list.ToArray();
 			}
-		}
-
-		public CallAble()
-		{
-
 		}
 
 		private void __add_object(_NC arrlist,params object[] oarr)
@@ -411,6 +404,11 @@ namespace CallAble
 		public static string string_default_function(string fmtstr,string defname = "cc")
 		{
 			return fmtstr + " name " + defname;
+		}
+
+		public CallAble()
+		{
+
 		}
 
 		public static void Main(string[] args)
