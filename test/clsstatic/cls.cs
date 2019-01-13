@@ -6,11 +6,25 @@ namespace clsstatic
 {
 	public class clsstatic
 	{
-		static Dictionary<string,object> m_dict = new Dictionary<string, object>
-		{
-			{"prog", "cls"},
+		public static Dictionary<string,object> m_defdict = new Dictionary<string,object>{
+			{"prog", Environment.GetCommandLineArgs().Length > 0 ? Environment.GetCommandLineArgs()[0] : ""},
 			{"usage", ""},
-			{"helphandler" , null}
+			{"description", ""},
+			{"epilog", ""},
+			{"version","0.0.1"},
+			{"errorhandler" , "exit"},
+			{"helphandler", null},
+			{"longprefix", "--"},
+			{"shortprefix", "-"},
+			{"nohelpoption", false},
+			{"nojsonoption", false},
+			{"helplong", "help"},
+			{"helpshort", "h"},
+			{"jsonlong", "json"},
+			{"cmdprefixadded", true},
+			{"parseall", true},
+			{"screenwidth", 80},
+			{"flagnochange", false}
 		};
 
 		public static void Main(string[] args)
@@ -20,11 +34,15 @@ namespace clsstatic
 			object val;
 			for (i=0;i<args.Length;i++) {
 				c = args[i];
-				if (m_dict.TryGetValue(c,out val)) {
+				if (clsstatic.m_defdict.TryGetValue(c,out val)) {
 					Console.Out.WriteLine("[{0}]={1}", c, val);
 				} else {
 					Console.Out.WriteLine("[{0}] no value", c);
 				}
+			}
+
+			foreach(KeyValuePair<string,object> kv in clsstatic.m_defdict) {
+				Console.Out.WriteLine("[{0}]=[{1}]", kv.Key, kv.Value);
 			}
 			return;
 		}
