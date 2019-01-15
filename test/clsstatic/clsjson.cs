@@ -130,7 +130,14 @@ namespace clsstatic
 		}
 
 		public static void Main(string[] args)
-		{			
+		{
+			Dictionary<string,object>	objs;
+			int i;
+			for (i=0; i< args.Length ; i ++) {
+				objs = parse_json(args[i]);
+				Console.Out.WriteLine("[{0}]={1}", args[i], objs);
+			}
+			
 			return;
 		}
 	}
