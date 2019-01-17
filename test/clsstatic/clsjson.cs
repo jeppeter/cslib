@@ -184,6 +184,25 @@ namespace clsstatic
 			this._set_dict(setting);
 		}
 
+		public Double get_float(string k)
+		{
+			object obj=null;
+			if (! this.m_dict.ContainsKey(k)) {
+				return 0.0;
+			}
+
+			obj = this.m_dict[k];
+			if (obj == null) {
+				return 0.0;
+			}
+
+			if (obj.GetType().FullName != "System.Double") {
+				return 0.0;
+			}
+
+			return (Double) obj;
+		}
+
 	}
 
 	public class clsstatic
