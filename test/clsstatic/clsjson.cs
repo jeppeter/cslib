@@ -6,9 +6,40 @@ using System.IO;
 
 namespace clsstatic
 {
-	public class clsstatic
+	public class _LogObject
 	{
-		public static object get_token(string key,JToken tokv)
+		public _LogObject()
+		{
+
+		}
+	}
+
+	public class ExtArgsOptions : _LogObject
+	{
+		private static Dictionary<string,object>  m_defdict = new Dictionary<string,object>{
+			{"prog", Environment.GetCommandLineArgs().Length > 0 ? Environment.GetCommandLineArgs()[0] : ""},
+			{"usage", ""},
+			{"description", ""},
+			{"epilog", ""},
+			{"version","0.0.1"},
+			{"errorhandler" , "exit"},
+			{"helphandler", null},
+			{"longprefix", "--"},
+			{"shortprefix", "-"},
+			{"nohelpoption", false},
+			{"nojsonoption", false},
+			{"helplong", "help"},
+			{"helpshort", "h"},
+			{"jsonlong", "json"},
+			{"cmdprefixadded", true},
+			{"parseall", true},
+			{"screenwidth", 80},
+			{"flagnochange", false}
+		};
+
+		private Dictionary<string,object> m_dict;
+
+		private object _get_token(string key,JToken tokv)
 		{
 			string valtype;
 			JValue jval;
@@ -36,16 +67,16 @@ namespace clsstatic
 						throw new Exception(String.Format("value type [{0}] not supported", jval.Type));
 				}
 			} else if (valtype == "Newtonsoft.Json.Linq.JArray") {
-				v = (object)get_array(key, tokv.Value<JArray>());
+				v = (object) this._get_array(key, tokv.Value<JArray>());
 			} else if (valtype == "Newtonsoft.Json.Linq.JObject") {
-				v = (object)get_object(key, tokv.Value<JObject>());
+				v = (object) this._get_object(key, tokv.Value<JObject>());
 			} else {
 				throw new Exception(String.Format("not supported type [{0}]", valtype));
 			}
 			return v;
 		}
 
-		public static object[] get_array(string key,JArray jarr)
+		private object[] _get_array(string key,JArray jarr)
 		{
 			object[] retobj;
 			int i;
@@ -54,12 +85,12 @@ namespace clsstatic
 			retobj = new object[jarr.Count];
 			for (i=0; i < jarr.Count ;i ++) {
 				tok = jarr[i];
-				retobj[i] = get_token(String.Format("{0}[{1}]", key, i), tok);
+				retobj[i] = this._get_token(String.Format("{0}[{1}]", key, i), tok);
 			}
 			return retobj;
 		}
 
-		public static Dictionary<string, object> get_object(  string key,JObject jobj)
+		private Dictionary<string, object> _get_object(string key,JObject jobj)
 		{
 			Dictionary<string,object> retdict = new Dictionary<string,object>();
 			Dictionary<string,JToken> nobj;
@@ -71,13 +102,13 @@ namespace clsstatic
 			keys = new List<String>(nobj.Keys);
 			for (i=0; i < keys.Count; i++) {
 				k = keys[i];
-				v = get_token(k, nobj[k]);
+				v = this._get_token(k, nobj[k]);
 				retdict[k] = v;
 			}
 			return retdict;
 		}
 
-		public static Dictionary<string,object> parse_json(string s)
+		private Dictionary<string,object> _parse_json(string s)
 		{
 			JToken tok = JToken.Parse(s);
 			Dictionary<string,JToken> dtok;
@@ -118,9 +149,9 @@ namespace clsstatic
 							throw new Exception(String.Format("value type [{0}] not supported", jval.Type));
 					}
 				} else if (valtype == "Newtonsoft.Json.Linq.JArray") {
-					v = get_array(k, tokv.Value<JArray>());
+					v = _get_array(k, tokv.Value<JArray>());
 				} else if (valtype == "Newtonsoft.Json.Linq.JObject") {
-					v = get_object(k, tokv.Value<JObject>());
+					v = _get_object(k, tokv.Value<JObject>());
 				} else {
 					throw new Exception(String.Format("not supported type [{0}]", valtype));
 				}
@@ -129,13 +160,41 @@ namespace clsstatic
 			return retdict;
 		}
 
+		private void _set_dict(Dictionary<string,object> setting)
+		{
+			foreach (KeyValuePair<string,object> kv in setting) {
+				this.m_dict[kv.Key] = kv.Value;
+			}
+			return;			
+		}
+
+		public ExtArgsOptions(string setting) : base()
+		{
+			Dictionary<string,object> s;
+			this.m_dict = new Dictionary<string,object>();
+			s = this._parse_json(setting);
+			this._set_dict(ExtArgsOptions.m_defdict);
+			this._set_dict(s);
+		}
+
+		public ExtArgsOptions(Dictionary<string,object> setting) : base()
+		{
+			this.m_dict = new Dictionary<string,object>();
+			this._set_dict(ExtArgsOptions.m_defdict);
+			this._set_dict(setting);
+		}
+
+	}
+
+	public class clsstatic
+	{
 		public static void Main(string[] args)
 		{
-			Dictionary<string,object>	objs;
+			ExtArgsOptions opt;
 			int i;
 			for (i=0; i< args.Length ; i ++) {
-				objs = parse_json(args[i]);
-				Console.Out.WriteLine("[{0}]={1}", args[i], objs);
+				opt = new ExtArgsOptions(args[i]);
+				Console.Out.WriteLine("[{0}]={1}", args[i], opt);
 			}
 			
 			return;
