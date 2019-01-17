@@ -187,20 +187,70 @@ namespace clsstatic
 		public Double get_float(string k)
 		{
 			object obj=null;
-			if (! this.m_dict.ContainsKey(k)) {
-				return 0.0;
+			Double dval=0.0;
+			if (this.m_dict.ContainsKey(k)) {
+				obj = this.m_dict[k];
+				if (obj != null) {
+					if (obj.GetType().FullName == "System.Double") {
+						dval = (Double) obj;
+					}
+				}
 			}
+			return dval;
+		}
 
-			obj = this.m_dict[k];
-			if (obj == null) {
-				return 0.0;
+		public string get_string(string k)
+		{
+			string s = "";
+			object obj = null;
+			if (this.m_dict.ContainsKey(k)) {
+				obj = this.m_dict[k];
+				if (obj != null) {
+					if (obj.GetType().FullName == "System.String") {
+						s = (string) obj;
+					}
+				}
 			}
+			return s;
+		}
 
-			if (obj.GetType().FullName != "System.Double") {
-				return 0.0;
+		public System.Int64 get_int(string k)
+		{
+			System.Int64 ival = 0;
+			object obj = null;
+			if (this.m_dict.ContainsKey(k)) {
+				obj = this.m_dict[k];
+				if (obj != null) {
+					if (obj.GetType().FullName == "System.Int64") {
+						ival = (System.Int64) obj;
+					}
+				}
 			}
+			return ival;
+		}
 
-			return (Double) obj;
+		public bool get_bool(string k)
+		{
+			bool bval = false;
+			object obj = null;
+			if (this.m_dict.ContainsKey(k)) {
+				obj = this.m_dict[k];
+				if (obj != null) {
+					if (obj.GetType().FullName == "System.Boolean") {
+						bval = (System.Boolean) obj;
+					}
+				}
+			}
+			return bval;
+		}
+
+		public string format()
+		{
+			string retstr="";
+			foreach(var kv in this.m_dict) {
+				retstr += String.Format("{0}={1};", kv.Key, kv.Value);
+			}
+			return retstr;
 		}
 
 	}
@@ -210,12 +260,42 @@ namespace clsstatic
 		public static void Main(string[] args)
 		{
 			ExtArgsOptions opt;
-			int i;
-			for (i=0; i< args.Length ; i ++) {
-				opt = new ExtArgsOptions(args[i]);
-				Console.Out.WriteLine("[{0}]={1}", args[i], opt);
+			string jstr;
+			if (args.Length  < 1) {
+				Console.Error.WriteLine("clsjson file type key");
+				return;
 			}
-			
+
+			jstr = File.ReadAllText(args[0]);
+			opt = new ExtArgsOptions(jstr);
+
+			if (args.Length < 3) {
+				Console.Out.WriteLine("{0}", opt.format());
+				return;
+			}
+
+
+
+			if (args[1] == "float") {
+				Double dval ;
+				dval = opt.get_float(args[2]);
+				Console.Out.WriteLine("[{0}].float={1}", args[2], dval);
+			} else if (args[1] == "string") {
+				string sval;
+				sval = opt.get_string(args[2]);
+				Console.Out.WriteLine("[{0}].string=[{1}]", args[2], sval);
+			} else if (args[1] == "int") {
+				System.Int64 ival;
+				ival = opt.get_int(args[2]);
+				Console.Out.WriteLine("[{0}].int={1}", args[2], ival);
+			} else if (args[1] == "bool") {
+				System.Boolean bval;
+				bval = opt.get_bool(args[2]);
+				Console.Out.WriteLine("[{0}].bool={1}", args[2], bval);
+			} else {
+				Console.Error.WriteLine("[{0}] not supported", args[1]);
+			}
+
 			return;
 		}
 	}
